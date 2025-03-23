@@ -19,6 +19,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "match-counter.h"
 #include <plugin-support.h>
 #include <util/platform.h>
+#include <util/dstr.h>
 
 // グローバルな試合カウンター
 static match_counter_t *global_counter = NULL;

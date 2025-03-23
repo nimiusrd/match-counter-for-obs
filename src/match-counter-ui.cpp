@@ -187,7 +187,8 @@ void MatchCounterDialog::updateDisplay()
 }
 
 // グローバル変数
-static QAction *action = nullptr;
+// 将来的に使用する可能性があるため宣言しておく
+// static QAction *action = nullptr;
 
 // メニューアクションのコールバック
 static void menu_action_clicked()
@@ -209,7 +210,6 @@ void showMatchCounterDialog()
 static void frontend_event_callback(enum obs_frontend_event event, void *)
 {
     if (event == OBS_FRONTEND_EVENT_FINISHED_LOADING) {
-        QMainWindow *main_window = (QMainWindow *)obs_frontend_get_main_window();
         QAction *action = (QAction *)obs_frontend_add_tools_menu_qaction(
             obs_module_text("MatchCounter"));
 

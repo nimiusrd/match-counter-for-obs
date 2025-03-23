@@ -110,6 +110,11 @@ char *match_counter_get_formatted_text(match_counter_t *counter);
  */
 match_counter_t *match_counter_get_global(void);
 
+/**
+ * グローバルな試合カウンターを解放する
+ */
+void match_counter_free_global(void);
+
 #ifdef __cplusplus
 }
 #endif

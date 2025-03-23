@@ -71,18 +71,17 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
 
 ### ビルド手順
 
+リポジトリをクローン
 ```bash
-# リポジトリをクローン
 git clone https://github.com/nimiusrd/match-counter-for-obs.git
-cd match-counter-for-obs
-
-# ビルドディレクトリを作成
+```
+CMakeを実行
+```bash
 mkdir build && cd build
-
-# CMakeを実行
 cmake ..
-
-# ビルド
+```
+ビルド
+```bash
 cmake --build .
 ```
 

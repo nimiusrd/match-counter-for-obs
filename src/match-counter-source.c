@@ -30,6 +30,16 @@ struct match_counter_source {
     char *player_name;
 };
 
+// 前方宣言
+static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
+static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
+static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
+static bool match_counter_add_win_button(obs_properties_t *props, obs_property_t *property, void *data);
+static bool match_counter_add_loss_button(obs_properties_t *props, obs_property_t *property, void *data);
+static bool match_counter_subtract_win_button(obs_properties_t *props, obs_property_t *property, void *data);
+static bool match_counter_subtract_loss_button(obs_properties_t *props, obs_property_t *property, void *data);
+static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *property, void *data);
+
 static const char *match_counter_source_get_name(void *unused)
 {
     UNUSED_PARAMETER(unused);
@@ -94,7 +104,7 @@ static void match_counter_source_destroy(void *data)
     bfree(context);
 }
 
-static bool match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
+static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
 {
     UNUSED_PARAMETER(id);
     UNUSED_PARAMETER(hotkey);
@@ -106,11 +116,9 @@ static bool match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotk
         match_counter_add_win(counter);
         obs_source_update_properties(context->source);
     }
-
-    return true;
 }
 
-static bool match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
+static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
 {
     UNUSED_PARAMETER(id);
     UNUSED_PARAMETER(hotkey);
@@ -122,11 +130,9 @@ static bool match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hot
         match_counter_add_loss(counter);
         obs_source_update_properties(context->source);
     }
-
-    return true;
 }
 
-static bool match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
+static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
 {
     UNUSED_PARAMETER(id);
     UNUSED_PARAMETER(hotkey);
@@ -138,8 +144,6 @@ static bool match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
         match_counter_reset(counter);
         obs_source_update_properties(context->source);
     }
-
-    return true;
 }
 
 static void match_counter_source_render(void *data, gs_effect_t *effect)
@@ -163,9 +167,8 @@ static uint32_t match_counter_source_get_height(void *data)
 
 static obs_properties_t *match_counter_source_get_properties(void *data)
 {
-    struct match_counter_source *context = data;
-    match_counter_t *counter = match_counter_get_global();
-
+    UNUSED_PARAMETER(data);
+    
     obs_properties_t *props = obs_properties_create();
 
     obs_properties_add_text(props, "player_name", 
@@ -262,7 +265,7 @@ static void match_counter_source_get_defaults(obs_data_t *settings)
 
 static const char *match_counter_source_get_text(void *data)
 {
-    struct match_counter_source *context = data;
+    UNUSED_PARAMETER(data);
     match_counter_t *counter = match_counter_get_global();
     
     return match_counter_get_formatted_text(counter);
@@ -280,6 +283,5 @@ struct obs_source_info match_counter_source_info = {
     .get_defaults = match_counter_source_get_defaults,
     .get_width = match_counter_source_get_width,
     .get_height = match_counter_source_get_height,
-    .video_render = match_counter_source_render,
-    .get_text = match_counter_source_get_text
+    .video_render = match_counter_source_render
 };
