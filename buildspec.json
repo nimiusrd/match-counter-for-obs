@@ -39,7 +39,7 @@
     "name": "plugintemplate-for-obs",
     "displayName": "Plugin Template for OBS",
     "version": "1.0.0",
-    "author": "Your Name Here",
-    "website": "https://example.com",
-    "email": "me@example.com"
+    "author": "Yudai Udagawa",
+    "website": "https://github.com/nimiusrd/obs-plugin/tree/master",
+    "email": "nimius.rd@gmail.com"
 }
