@@ -1,59 +1,91 @@
-# OBS Plugin Template
+# Match Counter for OBS
 
-## Introduction
+## 概要
 
-The plugin template is meant to be used as a starting point for OBS Studio plugin development. It includes:
+Match Counter for OBSは、対戦ゲーム配信をサポートするためのOBS Studioプラグインです。このプラグインを使用することで、配信中の勝敗カウントを簡単に管理し、表示することができます。
 
-* Boilerplate plugin source code
-* A CMake project file
-* GitHub Actions workflows and repository actions
+主な機能:
 
-## Supported Build Environments
+* 勝敗のカウントと表示
+* カスタマイズ可能な表示フォーマット
+* 専用の操作画面からの簡単な勝敗入力
+* ホットキーによる素早いカウント操作
 
-| Platform  | Tool   |
-|-----------|--------|
-| Windows   | Visal Studio 17 2022 |
-| macOS     | XCode 16.0 |
-| Windows, macOS  | CMake 3.30.5 |
-| Ubuntu 24.04 | CMake 3.28.3 |
-| Ubuntu 24.04 | `ninja-build` |
-| Ubuntu 24.04 | `pkg-config`
-| Ubuntu 24.04 | `build-essential` |
+## インストール方法
 
-## Quick Start
+1. リリースページから最新のバージョンをダウンロードします
+2. ダウンロードしたファイルを解凍します
+3. 解凍したフォルダを以下の場所に配置します:
+   * Windows: `C:\Program Files\obs-studio\obs-plugins\64bit\`
+   * macOS: `/Library/Application Support/obs-studio/plugins/`
+   * Linux: `/usr/lib/obs-plugins/` または `~/.config/obs-studio/plugins/`
+4. OBS Studioを再起動します
 
-An absolute bare-bones [Quick Start Guide](https://github.com/obsproject/obs-plugintemplate/wiki/Quick-Start-Guide) is available in the wiki.
+## 使い方
 
-## Documentation
+### 勝敗カウンターの追加
 
-All documentation can be found in the [Plugin Template Wiki](https://github.com/obsproject/obs-plugintemplate/wiki).
+1. OBS Studioを起動します
+2. ソースリストの「+」ボタンをクリックします
+3. 「試合カウンター」を選択します
+4. 名前を入力して「OK」をクリックします
+5. 設定画面でプレイヤー名や表示フォーマットを設定します
 
-Suggested reading to get up and running:
+### 専用画面からの操作
 
-* [Getting started](https://github.com/obsproject/obs-plugintemplate/wiki/Getting-Started)
-* [Build system requirements](https://github.com/obsproject/obs-plugintemplate/wiki/Build-System-Requirements)
-* [Build system options](https://github.com/obsproject/obs-plugintemplate/wiki/CMake-Build-System-Options)
+1. OBS Studioのメニューバーから「ツール」→「試合カウンター」を選択します
+2. 表示された画面から以下の操作が可能です:
+   * プレイヤー名の変更
+   * 表示フォーマットの変更
+   * 勝利/敗北の追加・減少
+   * カウンターのリセット
 
-## GitHub Actions & CI
+### 表示フォーマットのカスタマイズ
 
-Default GitHub Actions workflows are available for the following repository actions:
+以下の変数を使用して表示フォーマットをカスタマイズできます:
+* `%w` - 勝利数
+* `%l` - 敗北数
+* `%n` - プレイヤー名
 
-* `push`: Run for commits or tags pushed to `master` or `main` branches.
-* `pr-pull`: Run when a Pull Request has been pushed or synchronized.
-* `dispatch`: Run when triggered by the workflow dispatch in GitHub's user interface.
-* `build-project`: Builds the actual project and is triggered by other workflows.
-* `check-format`: Checks CMake and plugin source code formatting and is triggered by other workflows.
+例:
+* `%n: %w勝 %l敗` → 「プレイヤー名: 3勝 1敗」
+* `%w-%l` → 「3-1」
+* `%n (%w/%l)` → 「プレイヤー名 (3/1)」
 
-The workflows make use of GitHub repository actions (contained in `.github/actions`) and build scripts (contained in `.github/scripts`) which are not needed for local development, but might need to be adjusted if additional/different steps are required to build the plugin.
+## ホットキーの設定
 
-### Retrieving build artifacts
+1. OBS Studioの「設定」→「ホットキー」を開きます
+2. 「試合カウンター」セクションで以下のホットキーを設定できます:
+   * 勝利を追加
+   * 敗北を追加
+   * カウンターをリセット
 
-Successful builds on GitHub Actions will produce build artifacts that can be downloaded for testing. These artifacts are commonly simple archives and will not contain package installers or installation programs.
+## ビルド方法
 
-### Building a Release
+### 必要なもの
 
-To create a release, an appropriately named tag needs to be pushed to the `main`/`master` branch using semantic versioning (e.g., `12.3.4`, `23.4.5-beta2`). A draft release will be created on the associated repository with generated installer packages or installation programs attached as release artifacts.
+* CMake 3.28以上
+* C/C++コンパイラ (GCC, Clang, MSVC等)
+* OBS Studio開発ファイル
+* Qt6開発ファイル
 
-## Signing and Notarizing on macOS
+### ビルド手順
 
-Basic concepts of codesigning and notarization on macOS are explained in the correspodning [Wiki article](https://github.com/obsproject/obs-plugintemplate/wiki/Codesigning-On-macOS) which has a specific section for the [GitHub Actions setup](https://github.com/obsproject/obs-plugintemplate/wiki/Codesigning-On-macOS#setting-up-code-signing-for-github-actions).
+```bash
+# リポジトリをクローン
+git clone https://github.com/nimiusrd/match-counter-for-obs.git
+cd match-counter-for-obs
+
+# ビルドディレクトリを作成
+mkdir build && cd build
+
+# CMakeを実行
+cmake ..
+
+# ビルド
+cmake --build .
+```
+
+## ライセンス
+
+このプラグインはGPLv2ライセンスの下で公開されています。詳細はLICENSEファイルを参照してください。

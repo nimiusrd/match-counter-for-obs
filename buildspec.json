@@ -36,10 +36,11 @@
             "bundleId": "com.example.plugintemplate-for-obs"
         }
     },
-    "name": "plugintemplate-for-obs",
-    "displayName": "Plugin Template for OBS",
+    "name": "match-counter",
+    "displayName": "Match Counter for OBS",
     "version": "1.0.0",
     "author": "Yudai Udagawa",
     "website": "https://github.com/nimiusrd/obs-plugin/tree/master",
-    "email": "nimius.rd@gmail.com"
+    "email": "nimius.rd@gmail.com",
+    "description": "A plugin for OBS Studio that helps streamers track and display match results for competitive games."
 }
