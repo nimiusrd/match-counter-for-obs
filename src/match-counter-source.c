@@ -123,7 +123,7 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 
 	struct MatchCounterSource *context = bzalloc(sizeof(struct MatchCounterSource));
 	context->source = source;
-	context->format = bstrdup("%w - %l");
+	context->format = bstrdup("%w - %l (%r)");
 
 	// テキスト描画用の設定
 	context->texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
@@ -444,7 +444,7 @@ static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *
 static void match_counter_source_get_defaults(obs_data_t *settings)
 {
 	// カウンター設定のデフォルト値
-	obs_data_set_default_string(settings, "format", "%w - %l");
+	obs_data_set_default_string(settings, "format", "%w - %l (%r)");
 
 	// フォント設定のデフォルト値
 	obs_data_t *font_obj = obs_data_create();

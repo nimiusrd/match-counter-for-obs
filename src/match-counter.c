@@ -29,7 +29,7 @@ match_counter_t *match_counter_create(void)
 	match_counter_t *counter = bzalloc(sizeof(match_counter_t));
 	counter->wins = 0;
 	counter->losses = 0;
-	counter->format = bstrdup("%w - %l");
+	counter->format = bstrdup("%w - %l (%r)");
 	return counter;
 }
 
@@ -99,6 +99,18 @@ int match_counter_get_losses(match_counter_t *counter)
 	return counter->losses;
 }
 
+float match_counter_get_win_rate(match_counter_t *counter)
+{
+	if (!counter)
+		return 0.0f;
+
+	int total = counter->wins + counter->losses;
+	if (total == 0)
+		return 0.0f;
+
+	return (float)counter->wins / (float)total;
+}
+
 void match_counter_set_format(match_counter_t *counter, const char *format)
 {
 	if (!counter || !format)
@@ -117,6 +129,7 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 	const char *format = counter->format;
 	int wins = counter->wins;
 	int losses = counter->losses;
+	float win_rate = match_counter_get_win_rate(counter);
 
 	dstr_init(&str);
 
@@ -127,6 +140,9 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 				dstr_catf(&str, "%d", wins);
 			} else if (*format == 'l') {
 				dstr_catf(&str, "%d", losses);
+			} else if (*format == 'r') {
+				// 勝率をパーセント表示（小数点以下1桁）
+				dstr_catf(&str, "%.1f%%", win_rate * 100.0f);
 			} else {
 				dstr_catf(&str, "%%%c", *format);
 			}
