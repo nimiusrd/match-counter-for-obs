@@ -73,6 +73,8 @@ static const char *match_counter_source_get_name(void *unused)
 
 static void match_counter_source_update(void *data, obs_data_t *settings)
 {
+	blog(LOG_INFO, "match_counter_source_update: Updating match counter source");
+
 	struct match_counter_source *context = data;
 	match_counter_t *counter = match_counter_get_global();
 
@@ -90,8 +92,11 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	uint16_t font_size = (uint16_t)obs_data_get_int(font_obj, "size");
 	uint32_t font_flags = (uint32_t)obs_data_get_int(font_obj, "flags");
 
+	blog(LOG_DEBUG, "match_counter_source_update: Font settings - name='%s', size=%d, flags=%d",
+	     font_name && strlen(font_name) ? font_name : "Arial", font_size, font_flags);
+
 	if (font_size <= 0)
-		font_size = 256;
+		font_size = 32;
 
 	bfree(context->format);
 	bfree(context->player_name);
@@ -113,10 +118,14 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 
 	match_counter_set_format(counter, format);
 	match_counter_set_player_name(counter, player_name);
+
+	blog(LOG_DEBUG, "match_counter_source_update: Updated with format='%s', player_name='%s'", format, player_name);
 }
 
 static void *match_counter_source_create(obs_data_t *settings, obs_source_t *source)
 {
+	blog(LOG_INFO, "match_counter_source_create: Creating match counter source");
+
 	struct match_counter_source *context = bzalloc(sizeof(struct match_counter_source));
 	context->source = source;
 	context->format = bstrdup("%n: %w - %l");
@@ -136,6 +145,9 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	context->vertical_align_center = true;
 	context->text_updated = true;
 
+	blog(LOG_DEBUG, "match_counter_source_create: Initializing with format='%s', player_name='%s'", context->format,
+	     context->player_name);
+
 	match_counter_source_update(context, settings);
 
 	// ホットキーの設定
@@ -148,11 +160,14 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	context->reset_hotkey = obs_hotkey_register_source(
 		source, "match_counter_reset", obs_module_text("ResetCounter"), match_counter_reset_hotkey, context);
 
+	blog(LOG_INFO, "match_counter_source_create: Match counter source created successfully");
 	return context;
 }
 
 static void match_counter_source_destroy(void *data)
 {
+	blog(LOG_INFO, "match_counter_source_destroy: Destroying match counter source");
+
 	struct match_counter_source *context = data;
 
 	obs_hotkey_unregister(context->win_hotkey);
@@ -171,6 +186,7 @@ static void match_counter_source_destroy(void *data)
 
 	// テキストソースの解放
 	if (context->text_source) {
+		blog(LOG_DEBUG, "match_counter_source_destroy: Releasing text source");
 		obs_source_release(context->text_source);
 		context->text_source = NULL;
 	}
@@ -180,6 +196,8 @@ static void match_counter_source_destroy(void *data)
 	bfree(context->font_name);
 	bfree(context->text);
 	bfree(context);
+
+	blog(LOG_INFO, "match_counter_source_destroy: Match counter source destroyed");
 }
 
 static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
@@ -191,8 +209,11 @@ static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotk
 	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
+		blog(LOG_INFO, "match_counter_win_hotkey: Adding win");
 		match_counter_add_win(counter);
 		obs_source_update_properties(context->source);
+		blog(LOG_DEBUG, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
+		     match_counter_get_wins(counter), match_counter_get_losses(counter));
 	}
 }
 
@@ -205,8 +226,11 @@ static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hot
 	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
+		blog(LOG_INFO, "match_counter_loss_hotkey: Adding loss");
 		match_counter_add_loss(counter);
 		obs_source_update_properties(context->source);
+		blog(LOG_DEBUG, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
+		     match_counter_get_wins(counter), match_counter_get_losses(counter));
 	}
 }
 
@@ -219,8 +243,11 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
+		blog(LOG_INFO, "match_counter_reset_hotkey: Resetting counter");
 		match_counter_reset(counter);
 		obs_source_update_properties(context->source);
+		blog(LOG_DEBUG, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
+		     match_counter_get_wins(counter), match_counter_get_losses(counter));
 	}
 }
 
@@ -231,9 +258,13 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 
 	// テキストソースがない場合は作成
 	if (!context->text_source) {
-		context->text_source = obs_source_create_private("match_counter_source", "match_counter_text", NULL);
-		if (!context->text_source)
+		blog(LOG_INFO, "match_counter_source_render: Creating text source");
+		context->text_source = obs_source_create_private("text_gdiplus", "match_counter_text", NULL);
+		if (!context->text_source) {
+			blog(LOG_ERROR, "match_counter_source_render: Failed to create text source");
 			return;
+		}
+		blog(LOG_DEBUG, "match_counter_source_render: Text source created successfully");
 	}
 
 	// テキストの更新が必要かチェック
@@ -241,9 +272,12 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	const char *formatted_text = match_counter_get_formatted_text(counter);
 
 	if (!formatted_text || !strlen(formatted_text)) {
+		blog(LOG_DEBUG, "match_counter_source_render: Empty text, skipping render");
 		bfree((void *)formatted_text);
 		return;
 	}
+
+	blog(LOG_DEBUG, "match_counter_source_render: Rendering text '%s'", formatted_text);
 
 	// テキストソースの設定を更新
 	obs_data_t *settings = obs_data_create();
@@ -279,6 +313,8 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	// テキストソースのサイズを取得
 	context->cx = obs_source_get_width(context->text_source);
 	context->cy = obs_source_get_height(context->text_source);
+
+	blog(LOG_DEBUG, "match_counter_source_render: Text dimensions - width=%d, height=%d", context->cx, context->cy);
 
 	// テキストソースをレンダリング
 	obs_source_video_render(context->text_source);
@@ -442,7 +478,8 @@ static const char *match_counter_source_get_text(void *data)
 
 struct obs_source_info match_counter_source_info = {.id = "match_counter_source",
 						    .type = OBS_SOURCE_TYPE_INPUT,
-						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW | OBS_SOURCE_SRGB,
+						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW |
+								    OBS_SOURCE_SRGB,
 						    .icon_type = OBS_ICON_TYPE_TEXT,
 						    .get_name = match_counter_source_get_name,
 						    .create = match_counter_source_create,
