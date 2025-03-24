@@ -199,8 +199,10 @@ static void frontend_event_callback(enum obs_frontend_event event, void *)
 {
 	if (event == OBS_FRONTEND_EVENT_FINISHED_LOADING) {
 		QAction *action = (QAction *)obs_frontend_add_tools_menu_qaction(obs_module_text("MatchCounter"));
-
+		
 		QObject::connect(action, &QAction::triggered, menu_action_clicked);
+		obs_frontend_add_tools_menu_item(obs_module_text("AddWin"), nullptr, nullptr);
+		obs_frontend_add_tools_menu_item(obs_module_text("AddLoss"), nullptr, nullptr);	
 	}
 }
 
