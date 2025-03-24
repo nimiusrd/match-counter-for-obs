@@ -255,8 +255,9 @@ static const char *match_counter_source_get_text(void *data)
 
 struct obs_source_info match_counter_source_info = {.id = "match_counter_source",
 						    .type = OBS_SOURCE_TYPE_INPUT,
-						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW | OBS_SOURCE_SRGB,
-							.icon_type = OBS_ICON_TYPE_TEXT,
+						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW |
+								    OBS_SOURCE_SRGB,
+						    .icon_type = OBS_ICON_TYPE_TEXT,
 						    .get_name = match_counter_source_get_name,
 						    .create = match_counter_source_create,
 						    .destroy = match_counter_source_destroy,
