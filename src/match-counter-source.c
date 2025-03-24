@@ -259,7 +259,12 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	// テキストソースがない場合は作成
 	if (!context->text_source) {
 		blog(LOG_INFO, "match_counter_source_render: Creating text source");
+#ifdef _WIN32
 		context->text_source = obs_source_create_private("text_gdiplus", "match_counter_text", NULL);
+#else
+		context->text_source = obs_source_create_private("text_ft2_source", "match_counter_text", NULL);
+#endif
+
 		if (!context->text_source) {
 			blog(LOG_ERROR, "match_counter_source_render: Failed to create text source");
 			return;
