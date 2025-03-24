@@ -61,6 +61,7 @@ private:
 	QLineEdit *formatEdit;
 	QSpinBox *winsSpinBox;
 	QSpinBox *lossesSpinBox;
+	QLabel *winRateValueLabel;
 
 	QPushButton *addWinButton;
 	QPushButton *addLossButton;

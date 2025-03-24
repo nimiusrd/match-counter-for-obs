@@ -48,7 +48,7 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 	formLayout = new QFormLayout(settingsGroup);
 
 	formatEdit = new QLineEdit(this);
-	formatEdit->setText(counter->format);
+	formatEdit->setText(match_counter_get_format(counter));
 	formatEdit->setToolTip(obs_module_text("FormatTooltip"));
 	connect(formatEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onFormatChanged);
 	formLayout->addRow(obs_module_text("Format"), formatEdit);
@@ -60,43 +60,36 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 	QLabel *winsLabel = new QLabel(obs_module_text("Wins"), this);
 	winsSpinBox = new QSpinBox(this);
 	winsSpinBox->setRange(0, 999);
-	winsSpinBox->setValue(counter->wins);
+	winsSpinBox->setValue(match_counter_get_wins(counter));
 	connect(winsSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &MatchCounterDialog::onWinsChanged);
 
 	QLabel *lossesLabel = new QLabel(obs_module_text("Losses"), this);
 	lossesSpinBox = new QSpinBox(this);
 	lossesSpinBox->setRange(0, 999);
-	lossesSpinBox->setValue(counter->losses);
+	lossesSpinBox->setValue(match_counter_get_losses(counter));
 	connect(lossesSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &MatchCounterDialog::onLossesChanged);
+
+	// 勝率表示
+	QLabel *winRateLabel = new QLabel(obs_module_text("WinRate"), this);
+	winRateValueLabel = new QLabel(QString::number(match_counter_get_win_rate(counter) * 100.0f, 'f', 1) + "%", this);
+	winRateValueLabel->setAlignment(Qt::AlignCenter);
+	winRateValueLabel->setStyleSheet("font-weight: bold;");
 
 	counterLayout->addWidget(winsLabel);
 	counterLayout->addWidget(winsSpinBox);
 	counterLayout->addWidget(lossesLabel);
 	counterLayout->addWidget(lossesSpinBox);
+	counterLayout->addWidget(winRateLabel);
+	counterLayout->addWidget(winRateValueLabel);
+
 
 	// ボタン部分
 	QGroupBox *buttonGroup = new QGroupBox(obs_module_text("Actions"), this);
 	buttonLayout = new QHBoxLayout(buttonGroup);
 
-	addWinButton = new QPushButton(obs_module_text("AddWin"), this);
-	connect(addWinButton, &QPushButton::clicked, this, &MatchCounterDialog::onAddWin);
-
-	addLossButton = new QPushButton(obs_module_text("AddLoss"), this);
-	connect(addLossButton, &QPushButton::clicked, this, &MatchCounterDialog::onAddLoss);
-
-	subtractWinButton = new QPushButton(obs_module_text("SubtractWin"), this);
-	connect(subtractWinButton, &QPushButton::clicked, this, &MatchCounterDialog::onSubtractWin);
-
-	subtractLossButton = new QPushButton(obs_module_text("SubtractLoss"), this);
-	connect(subtractLossButton, &QPushButton::clicked, this, &MatchCounterDialog::onSubtractLoss);
-
 	resetButton = new QPushButton(obs_module_text("Reset"), this);
 	connect(resetButton, &QPushButton::clicked, this, &MatchCounterDialog::onReset);
 
-	buttonLayout->addWidget(addWinButton);
-	buttonLayout->addWidget(addLossButton);
-	buttonLayout->addWidget(subtractWinButton);
-	buttonLayout->addWidget(subtractLossButton);
 	buttonLayout->addWidget(resetButton);
 
 	// レイアウトに追加
@@ -110,42 +103,46 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 
 MatchCounterDialog::~MatchCounterDialog()
 {
-	// QTが自動的にクリーンアップするので何もしない
+	// カウンターを解放
+	if (counter) {
+		match_counter_destroy(counter);
+		counter = nullptr;
+	}
 }
 
 void MatchCounterDialog::onAddWin()
 {
 	match_counter_add_win(counter);
-	winsSpinBox->setValue(counter->wins);
+	winsSpinBox->setValue(match_counter_get_wins(counter));
 	updateDisplay();
 }
 
 void MatchCounterDialog::onAddLoss()
 {
 	match_counter_add_loss(counter);
-	lossesSpinBox->setValue(counter->losses);
+	lossesSpinBox->setValue(match_counter_get_losses(counter));
 	updateDisplay();
 }
 
 void MatchCounterDialog::onSubtractWin()
 {
 	match_counter_subtract_win(counter);
-	winsSpinBox->setValue(counter->wins);
+	winsSpinBox->setValue(match_counter_get_wins(counter));
 	updateDisplay();
 }
 
 void MatchCounterDialog::onSubtractLoss()
 {
 	match_counter_subtract_loss(counter);
-	lossesSpinBox->setValue(counter->losses);
+	lossesSpinBox->setValue(match_counter_get_losses(counter));
 	updateDisplay();
 }
 
 void MatchCounterDialog::onReset()
 {
 	match_counter_reset(counter);
-	winsSpinBox->setValue(counter->wins);
-	lossesSpinBox->setValue(counter->losses);
+	winsSpinBox->setValue(match_counter_get_wins(counter));
+	lossesSpinBox->setValue(match_counter_get_losses(counter));
 	updateDisplay();
 }
 
@@ -157,21 +154,26 @@ void MatchCounterDialog::onFormatChanged(const QString &text)
 
 void MatchCounterDialog::onWinsChanged(int value)
 {
-	counter->wins = value;
+	match_counter_set_wins(counter, value);
 	updateDisplay();
 }
 
 void MatchCounterDialog::onLossesChanged(int value)
 {
-	counter->losses = value;
+	match_counter_set_losses(counter, value);
 	updateDisplay();
 }
 
 void MatchCounterDialog::updateDisplay()
 {
+	// メインの表示を更新
 	char *text = match_counter_get_formatted_text(counter);
 	displayLabel->setText(QString::fromUtf8(text));
 	bfree(text);
+
+	// 勝率表示を更新
+	float win_rate = match_counter_get_win_rate(counter);
+	winRateValueLabel->setText(QString::number(win_rate * 100.0f, 'f', 1) + "%");
 }
 
 // グローバル変数
@@ -201,8 +203,6 @@ static void frontend_event_callback(enum obs_frontend_event event, void *)
 		QAction *action = (QAction *)obs_frontend_add_tools_menu_qaction(obs_module_text("MatchCounter"));
 		
 		QObject::connect(action, &QAction::triggered, menu_action_clicked);
-		obs_frontend_add_tools_menu_item(obs_module_text("AddWin"), nullptr, nullptr);
-		obs_frontend_add_tools_menu_item(obs_module_text("AddLoss"), nullptr, nullptr);	
 	}
 }
 

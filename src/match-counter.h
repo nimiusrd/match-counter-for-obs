@@ -92,6 +92,20 @@ int match_counter_get_wins(match_counter_t *counter);
 int match_counter_get_losses(match_counter_t *counter);
 
 /**
+ * 勝利数を設定する
+ * @param counter 試合カウンター
+ * @param wins 勝利数
+ */
+void match_counter_set_wins(match_counter_t *counter, int wins);
+
+/**
+ * 敗北数を設定する
+ * @param counter 試合カウンター
+ * @param losses 敗北数
+ */
+void match_counter_set_losses(match_counter_t *counter, int losses);
+
+/**
  * 勝率を取得する
  * @param counter 試合カウンター
  * @return 勝率（0.0～1.0）
@@ -109,6 +123,13 @@ float match_counter_get_win_rate(match_counter_t *counter);
  * %r - 勝率（パーセント表示、例: 75.0%）
  */
 void match_counter_set_format(match_counter_t *counter, const char *format);
+
+/**
+ * 表示フォーマットを取得する
+ * @param counter 試合カウンター
+ * @return フォーマット文字列
+ */
+const char *match_counter_get_format(match_counter_t *counter);
 
 /**
  * フォーマットされた文字列を取得する
