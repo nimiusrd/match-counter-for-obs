@@ -21,7 +21,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/platform.h>
 #include "match-counter.h"
 
-struct match_counter_source {
+struct MatchCounterSource {
 	obs_source_t *source;
 	obs_hotkey_id win_hotkey;
 	obs_hotkey_id loss_hotkey;
@@ -75,7 +75,7 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 {
 	blog(LOG_INFO, "match_counter_source_update: Updating match counter source");
 
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 	match_counter_t *counter = match_counter_get_global();
 
 	const char *format = obs_data_get_string(settings, "format");
@@ -126,7 +126,7 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 {
 	blog(LOG_INFO, "match_counter_source_create: Creating match counter source");
 
-	struct match_counter_source *context = bzalloc(sizeof(struct match_counter_source));
+	struct MatchCounterSource *context = bzalloc(sizeof(struct MatchCounterSource));
 	context->source = source;
 	context->format = bstrdup("%n: %w - %l");
 	context->player_name = bstrdup("Player");
@@ -168,7 +168,7 @@ static void match_counter_source_destroy(void *data)
 {
 	blog(LOG_INFO, "match_counter_source_destroy: Destroying match counter source");
 
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 
 	obs_hotkey_unregister(context->win_hotkey);
 	obs_hotkey_unregister(context->loss_hotkey);
@@ -205,15 +205,15 @@ static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotk
 	UNUSED_PARAMETER(id);
 	UNUSED_PARAMETER(hotkey);
 
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_win_hotkey: Adding win");
 		match_counter_add_win(counter);
 		obs_source_update_properties(context->source);
-		blog(LOG_DEBUG, "match_counter_win_hotkey: Current score - wins=%d, losses=%d", counter->wins,
-		     counter->losses);
+		blog(LOG_DEBUG, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
+		     match_counter_get_wins(counter), match_counter_get_losses(counter));
 	}
 }
 
@@ -222,15 +222,15 @@ static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hot
 	UNUSED_PARAMETER(id);
 	UNUSED_PARAMETER(hotkey);
 
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_loss_hotkey: Adding loss");
 		match_counter_add_loss(counter);
 		obs_source_update_properties(context->source);
-		blog(LOG_DEBUG, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d", counter->wins,
-		     counter->losses);
+		blog(LOG_DEBUG, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
+		     match_counter_get_wins(counter), match_counter_get_losses(counter));
 	}
 }
 
@@ -239,22 +239,22 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 	UNUSED_PARAMETER(id);
 	UNUSED_PARAMETER(hotkey);
 
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_reset_hotkey: Resetting counter");
 		match_counter_reset(counter);
 		obs_source_update_properties(context->source);
-		blog(LOG_DEBUG, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d", counter->wins,
-		     counter->losses);
+		blog(LOG_DEBUG, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
+		     match_counter_get_wins(counter), match_counter_get_losses(counter));
 	}
 }
 
 static void match_counter_source_render(void *data, gs_effect_t *effect)
 {
 	UNUSED_PARAMETER(effect);
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 
 	// テキストソースがない場合は作成
 	if (!context->text_source) {
@@ -326,7 +326,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 
 static uint32_t match_counter_source_get_width(void *data)
 {
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 
 	// テクスチャのサイズを返す
 	if (context->cx > 0) {
@@ -348,7 +348,7 @@ static uint32_t match_counter_source_get_width(void *data)
 
 static uint32_t match_counter_source_get_height(void *data)
 {
-	struct match_counter_source *context = data;
+	struct MatchCounterSource *context = data;
 
 	// テクスチャのサイズを返す
 	if (context->cy > 0) {

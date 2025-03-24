@@ -85,6 +85,22 @@ void match_counter_reset(match_counter_t *counter)
 	counter->losses = 0;
 }
 
+int match_counter_get_wins(match_counter_t *counter)
+{
+	if (!counter)
+		return 0;
+
+	return counter->wins;
+}
+
+int match_counter_get_losses(match_counter_t *counter)
+{
+	if (!counter)
+		return 0;
+
+	return counter->losses;
+}
+
 void match_counter_set_format(match_counter_t *counter, const char *format)
 {
 	if (!counter || !format)

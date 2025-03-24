@@ -79,6 +79,20 @@ void match_counter_subtract_loss(match_counter_t *counter);
 void match_counter_reset(match_counter_t *counter);
 
 /**
+ * 勝利数を取得する
+ * @param counter 試合カウンター
+ * @return 勝利数
+ */
+int match_counter_get_wins(match_counter_t *counter);
+
+/**
+ * 敗北数を取得する
+ * @param counter 試合カウンター
+ * @return 敗北数
+ */
+int match_counter_get_losses(match_counter_t *counter);
+
+/**
  * 表示フォーマットを設定する
  * @param counter 試合カウンター
  * @param format フォーマット文字列
