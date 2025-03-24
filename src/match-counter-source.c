@@ -94,7 +94,7 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	     font_name && strlen(font_name) ? font_name : "Arial", font_size, font_flags);
 
 	if (font_size <= 0)
-		font_size = 32;
+		font_size = 256;
 
 	bfree(context->format);
 	bfree(context->font_name);
@@ -113,6 +113,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	obs_data_release(font_obj);
 
 	match_counter_set_format(counter, format);
+
+	match_counter_source_render(context, NULL);
 
 	blog(LOG_DEBUG, "match_counter_source_update: Updated with format='%s'", format);
 }
@@ -449,7 +451,7 @@ static void match_counter_source_get_defaults(obs_data_t *settings)
 	// フォント設定のデフォルト値
 	obs_data_t *font_obj = obs_data_create();
 	obs_data_set_string(font_obj, "face", "Arial");
-	obs_data_set_int(font_obj, "size", 32);
+	obs_data_set_int(font_obj, "size", 256);
 	obs_data_set_int(font_obj, "flags", 0);
 	obs_data_set_default_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
