@@ -34,43 +34,43 @@ extern "C" {
 }
 
 class MatchCounterDialog : public QDialog {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit MatchCounterDialog(QWidget *parent = nullptr);
-    ~MatchCounterDialog();
+	explicit MatchCounterDialog(QWidget *parent = nullptr);
+	~MatchCounterDialog();
 
 private slots:
-    void onAddWin();
-    void onAddLoss();
-    void onSubtractWin();
-    void onSubtractLoss();
-    void onReset();
-    void onPlayerNameChanged(const QString &text);
-    void onFormatChanged(const QString &text);
-    void onWinsChanged(int value);
-    void onLossesChanged(int value);
-    void updateDisplay();
+	void onAddWin();
+	void onAddLoss();
+	void onSubtractWin();
+	void onSubtractLoss();
+	void onReset();
+	void onPlayerNameChanged(const QString &text);
+	void onFormatChanged(const QString &text);
+	void onWinsChanged(int value);
+	void onLossesChanged(int value);
+	void updateDisplay();
 
 private:
-    QVBoxLayout *mainLayout;
-    QHBoxLayout *counterLayout;
-    QFormLayout *formLayout;
-    QHBoxLayout *buttonLayout;
+	QVBoxLayout *mainLayout;
+	QHBoxLayout *counterLayout;
+	QFormLayout *formLayout;
+	QHBoxLayout *buttonLayout;
 
-    QLabel *displayLabel;
-    QLineEdit *playerNameEdit;
-    QLineEdit *formatEdit;
-    QSpinBox *winsSpinBox;
-    QSpinBox *lossesSpinBox;
+	QLabel *displayLabel;
+	QLineEdit *playerNameEdit;
+	QLineEdit *formatEdit;
+	QSpinBox *winsSpinBox;
+	QSpinBox *lossesSpinBox;
 
-    QPushButton *addWinButton;
-    QPushButton *addLossButton;
-    QPushButton *subtractWinButton;
-    QPushButton *subtractLossButton;
-    QPushButton *resetButton;
+	QPushButton *addWinButton;
+	QPushButton *addLossButton;
+	QPushButton *subtractWinButton;
+	QPushButton *subtractLossButton;
+	QPushButton *resetButton;
 
-    match_counter_t *counter;
+	match_counter_t *counter;
 };
 
 void showMatchCounterDialog();

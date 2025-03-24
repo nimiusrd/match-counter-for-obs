@@ -26,129 +26,129 @@ static match_counter_t *global_counter = NULL;
 
 match_counter_t *match_counter_create(void)
 {
-    match_counter_t *counter = bzalloc(sizeof(match_counter_t));
-    counter->wins = 0;
-    counter->losses = 0;
-    counter->format = bstrdup("%n: %w - %l");
-    counter->player_name = bstrdup("Player");
-    return counter;
+	match_counter_t *counter = bzalloc(sizeof(match_counter_t));
+	counter->wins = 0;
+	counter->losses = 0;
+	counter->format = bstrdup("%n: %w - %l");
+	counter->player_name = bstrdup("Player");
+	return counter;
 }
 
 void match_counter_destroy(match_counter_t *counter)
 {
-    if (!counter)
-        return;
+	if (!counter)
+		return;
 
-    bfree(counter->format);
-    bfree(counter->player_name);
-    bfree(counter);
+	bfree(counter->format);
+	bfree(counter->player_name);
+	bfree(counter);
 }
 
 void match_counter_add_win(match_counter_t *counter)
 {
-    if (!counter)
-        return;
+	if (!counter)
+		return;
 
-    counter->wins++;
+	counter->wins++;
 }
 
 void match_counter_add_loss(match_counter_t *counter)
 {
-    if (!counter)
-        return;
+	if (!counter)
+		return;
 
-    counter->losses++;
+	counter->losses++;
 }
 
 void match_counter_subtract_win(match_counter_t *counter)
 {
-    if (!counter || counter->wins <= 0)
-        return;
+	if (!counter || counter->wins <= 0)
+		return;
 
-    counter->wins--;
+	counter->wins--;
 }
 
 void match_counter_subtract_loss(match_counter_t *counter)
 {
-    if (!counter || counter->losses <= 0)
-        return;
+	if (!counter || counter->losses <= 0)
+		return;
 
-    counter->losses--;
+	counter->losses--;
 }
 
 void match_counter_reset(match_counter_t *counter)
 {
-    if (!counter)
-        return;
+	if (!counter)
+		return;
 
-    counter->wins = 0;
-    counter->losses = 0;
+	counter->wins = 0;
+	counter->losses = 0;
 }
 
 void match_counter_set_format(match_counter_t *counter, const char *format)
 {
-    if (!counter || !format)
-        return;
+	if (!counter || !format)
+		return;
 
-    bfree(counter->format);
-    counter->format = bstrdup(format);
+	bfree(counter->format);
+	counter->format = bstrdup(format);
 }
 
 void match_counter_set_player_name(match_counter_t *counter, const char *name)
 {
-    if (!counter || !name)
-        return;
+	if (!counter || !name)
+		return;
 
-    bfree(counter->player_name);
-    counter->player_name = bstrdup(name);
+	bfree(counter->player_name);
+	counter->player_name = bstrdup(name);
 }
 
 char *match_counter_get_formatted_text(match_counter_t *counter)
 {
-    if (!counter)
-        return bstrdup("");
+	if (!counter)
+		return bstrdup("");
 
-    struct dstr str = {0};
-    const char *format = counter->format;
-    const char *player_name = counter->player_name;
-    int wins = counter->wins;
-    int losses = counter->losses;
+	struct dstr str = {0};
+	const char *format = counter->format;
+	const char *player_name = counter->player_name;
+	int wins = counter->wins;
+	int losses = counter->losses;
 
-    dstr_init(&str);
+	dstr_init(&str);
 
-    while (*format) {
-        if (*format == '%') {
-            format++;
-            if (*format == 'w') {
-                dstr_catf(&str, "%d", wins);
-            } else if (*format == 'l') {
-                dstr_catf(&str, "%d", losses);
-            } else if (*format == 'n') {
-                dstr_cat(&str, player_name);
-            } else {
-                dstr_catf(&str, "%%%c", *format);
-            }
-        } else {
-            dstr_catf(&str, "%c", *format);
-        }
-        format++;
-    }
+	while (*format) {
+		if (*format == '%') {
+			format++;
+			if (*format == 'w') {
+				dstr_catf(&str, "%d", wins);
+			} else if (*format == 'l') {
+				dstr_catf(&str, "%d", losses);
+			} else if (*format == 'n') {
+				dstr_cat(&str, player_name);
+			} else {
+				dstr_catf(&str, "%%%c", *format);
+			}
+		} else {
+			dstr_catf(&str, "%c", *format);
+		}
+		format++;
+	}
 
-    return str.array;
+	return str.array;
 }
 
 match_counter_t *match_counter_get_global(void)
 {
-    if (!global_counter) {
-        global_counter = match_counter_create();
-    }
-    return global_counter;
+	if (!global_counter) {
+		global_counter = match_counter_create();
+	}
+	return global_counter;
 }
 
 void match_counter_free_global(void)
 {
-    if (global_counter) {
-        match_counter_destroy(global_counter);
-        global_counter = NULL;
-    }
+	if (global_counter) {
+		match_counter_destroy(global_counter);
+		global_counter = NULL;
+	}
 }

@@ -30,10 +30,10 @@ extern "C" {
  * 試合結果の構造体
  */
 typedef struct match_counter {
-    int wins;           // 勝利数
-    int losses;         // 敗北数
-    char *format;       // 表示フォーマット
-    char *player_name;  // プレイヤー名
+	int wins;          // 勝利数
+	int losses;        // 敗北数
+	char *format;      // 表示フォーマット
+	char *player_name; // プレイヤー名
 } match_counter_t;
 
 /**

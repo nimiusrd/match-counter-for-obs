@@ -52,6 +52,6 @@ void obs_module_unload(void)
 {
 	// グローバルカウンターの解放
 	match_counter_free_global();
-	
+
 	obs_log(LOG_INFO, "plugin unloaded");
 }
