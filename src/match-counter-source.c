@@ -23,6 +23,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 struct match_counter_source {
 	obs_source_t *source;
+	obs_source_t *text_source; // テキストソースを保持
 	obs_hotkey_id win_hotkey;
 	obs_hotkey_id loss_hotkey;
 	obs_hotkey_id reset_hotkey;
@@ -70,6 +71,9 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	context->format = bstrdup("%n: %w - %l");
 	context->player_name = bstrdup("Player");
 
+	// テキストソースの作成
+	context->text_source = obs_source_create_private("text_gdiplus", "match_counter_text", NULL);
+
 	match_counter_source_update(context, settings);
 
 	// ホットキーの設定
@@ -92,6 +96,12 @@ static void match_counter_source_destroy(void *data)
 	obs_hotkey_unregister(context->win_hotkey);
 	obs_hotkey_unregister(context->loss_hotkey);
 	obs_hotkey_unregister(context->reset_hotkey);
+
+	// テキストソースの解放
+	if (context->text_source) {
+		obs_source_release(context->text_source);
+		context->text_source = NULL;
+	}
 
 	bfree(context->format);
 	bfree(context->player_name);
@@ -142,21 +152,47 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 
 static void match_counter_source_render(void *data, gs_effect_t *effect)
 {
-	UNUSED_PARAMETER(data);
 	UNUSED_PARAMETER(effect);
-	obs_source_video_render(data);
+	struct match_counter_source *context = data;
+
+	if (!context->text_source)
+		return;
+
+	// テキストソースの設定を更新
+	match_counter_t *counter = match_counter_get_global();
+	const char *formatted_text = match_counter_get_formatted_text(counter);
+
+	obs_data_t *settings = obs_data_create();
+	obs_data_set_string(settings, "text", formatted_text);
+	obs_source_update(context->text_source, settings);
+
+	// テキストソースをレンダリング
+	obs_source_video_render(context->text_source);
+
+	// リソースの解放
+	obs_data_release(settings);
+	bfree((void *)formatted_text);
 }
 
 static uint32_t match_counter_source_get_width(void *data)
 {
 	UNUSED_PARAMETER(data);
-	return 0;
+	match_counter_t *counter = match_counter_get_global();
+	const char *text = match_counter_get_formatted_text(counter);
+
+	if (!text || !strlen(text)) {
+		return 0;
+	}
+
+	uint32_t width = (uint32_t)strlen(text) * 10; // 文字幅の簡易計算
+	bfree((void *)text);
+	return width;
 }
 
 static uint32_t match_counter_source_get_height(void *data)
 {
 	UNUSED_PARAMETER(data);
-	return 0;
+	return 20; // 固定の高さ
 }
 
 static obs_properties_t *match_counter_source_get_properties(void *data)
@@ -255,9 +291,7 @@ static const char *match_counter_source_get_text(void *data)
 
 struct obs_source_info match_counter_source_info = {.id = "match_counter_source",
 						    .type = OBS_SOURCE_TYPE_INPUT,
-						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW |
-								    OBS_SOURCE_SRGB,
-						    .icon_type = OBS_ICON_TYPE_TEXT,
+						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW,
 						    .get_name = match_counter_source_get_name,
 						    .create = match_counter_source_create,
 						    .destroy = match_counter_source_destroy,
