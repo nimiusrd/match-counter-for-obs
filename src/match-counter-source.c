@@ -325,7 +325,7 @@ static uint32_t match_counter_source_get_height(void *data)
 
 static obs_properties_t *match_counter_source_get_properties(void *data)
 {
-	struct match_counter_source *context = data;
+	UNUSED_PARAMETER(data);
 
 	obs_properties_t *props = obs_properties_create();
 
@@ -334,7 +334,6 @@ static obs_properties_t *match_counter_source_get_properties(void *data)
 	obs_properties_add_text(props, "format", obs_module_text("Format"), OBS_TEXT_DEFAULT);
 
 	// テキストスタイル設定
-	obs_properties_t *text_props = obs_properties_create();
 	obs_properties_add_font(props, "font", obs_module_text("Font"));
 	obs_properties_add_int(props, "font_size", obs_module_text("FontSize"), 8, 256, 1);
 	obs_properties_add_color(props, "color", obs_module_text("Color"));
