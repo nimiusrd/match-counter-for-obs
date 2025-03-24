@@ -144,7 +144,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 {
 	UNUSED_PARAMETER(data);
 	UNUSED_PARAMETER(effect);
-	// このソースは何も描画しない
+	obs_source_video_render(data);
 }
 
 static uint32_t match_counter_source_get_width(void *data)
@@ -255,7 +255,8 @@ static const char *match_counter_source_get_text(void *data)
 
 struct obs_source_info match_counter_source_info = {.id = "match_counter_source",
 						    .type = OBS_SOURCE_TYPE_INPUT,
-						    .output_flags = OBS_SOURCE_CAP_OBSOLETE,
+						    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_CUSTOM_DRAW | OBS_SOURCE_SRGB,
+							.icon_type = OBS_ICON_TYPE_TEXT,
 						    .get_name = match_counter_source_get_name,
 						    .create = match_counter_source_create,
 						    .destroy = match_counter_source_destroy,
