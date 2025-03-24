@@ -37,6 +37,9 @@ struct match_counter_source {
 	bool text_updated;
 	char *text;
 
+	// テキストソース
+	obs_source_t *text_source;
+
 	// テキストのスタイル設定
 	uint32_t color;
 	uint32_t color2;
@@ -75,13 +78,20 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 
 	const char *format = obs_data_get_string(settings, "format");
 	const char *player_name = obs_data_get_string(settings, "player_name");
-	const char *font_name = obs_data_get_string(settings, "font");
 	uint32_t color = (uint32_t)obs_data_get_int(settings, "color");
 	uint32_t outline_color = (uint32_t)obs_data_get_int(settings, "outline_color");
 	bool outline = obs_data_get_bool(settings, "outline");
 	bool align_center = obs_data_get_bool(settings, "align_center");
-	uint16_t font_size = (uint16_t)obs_data_get_int(settings, "font_size");
 	uint32_t custom_width = (uint32_t)obs_data_get_int(settings, "custom_width");
+
+	// フォント設定の取得
+	obs_data_t *font_obj = obs_data_get_obj(settings, "font");
+	const char *font_name = obs_data_get_string(font_obj, "face");
+	uint16_t font_size = (uint16_t)obs_data_get_int(font_obj, "size");
+	uint32_t font_flags = (uint32_t)obs_data_get_int(font_obj, "flags");
+
+	if (font_size <= 0)
+		font_size = 32;
 
 	bfree(context->format);
 	bfree(context->player_name);
@@ -89,14 +99,17 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 
 	context->format = bstrdup(format);
 	context->player_name = bstrdup(player_name);
-	context->font_name = bstrdup(font_name);
+	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
 	context->color = color;
 	context->outline_color = outline_color;
 	context->outline = outline;
 	context->align_center = align_center;
 	context->font_size = font_size;
+	context->font_flags = font_flags;
 	context->custom_width = custom_width;
 	context->text_updated = true;
+
+	obs_data_release(font_obj);
 
 	match_counter_set_format(counter, format);
 	match_counter_set_player_name(counter, player_name);
@@ -156,6 +169,12 @@ static void match_counter_source_destroy(void *data)
 		context->stagesurface = NULL;
 	}
 
+	// テキストソースの解放
+	if (context->text_source) {
+		obs_source_release(context->text_source);
+		context->text_source = NULL;
+	}
+
 	bfree(context->format);
 	bfree(context->player_name);
 	bfree(context->font_name);
@@ -205,156 +224,67 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 	}
 }
 
-// テキストをテクスチャにレンダリングする関数
-static void draw_text_to_texture(struct match_counter_source *context)
-{
-	if (!context->text_updated)
-		return;
-
-	if (!context->text || !strlen(context->text)) {
-		context->cx = 0;
-		context->cy = 0;
-		context->text_updated = false;
-		return;
-	}
-
-	// テキストのサイズを計算
-	uint32_t width, height;
-	obs_enter_graphics();
-	int *font = gs_font_create(context->font_name, context->font_size, context->font_flags);
-	if (font) {
-		width = gs_font_get_text_width(font, context->text, strlen(context->text));
-		height = context->font_size;
-		gs_font_destroy(font);
-	} else {
-		width = (uint32_t)strlen(context->text) * 10;
-		height = 20;
-	}
-	obs_leave_graphics();
-
-	// カスタム幅が設定されている場合は使用
-	if (context->custom_width > 0)
-		width = context->custom_width;
-
-	// テクスチャのサイズを更新
-	context->cx = width;
-	context->cy = height;
-
-	// テクスチャをレンダリング
-	obs_enter_graphics();
-	if (!gs_texrender_begin(context->texrender, width, height)) {
-		obs_leave_graphics();
-		return;
-	}
-
-	gs_clear(GS_CLEAR_COLOR, &(struct vec4){0.0f, 0.0f, 0.0f, 0.0f}, 0.0f, 0);
-
-	gs_matrix_push();
-	gs_matrix_identity();
-
-	gs_effect_t *solid = obs_get_base_effect(OBS_EFFECT_SOLID);
-	gs_technique_t *tech = gs_effect_get_technique(solid, "Solid");
-	gs_eparam_t *color_param = gs_effect_get_param_by_name(solid, "color");
-
-	gs_technique_begin(tech);
-	gs_technique_begin_pass(tech, 0);
-
-	// テキストの描画
-	int *font_obj = gs_font_create(context->font_name, context->font_size, context->font_flags);
-	if (font_obj) {
-		// アウトラインの描画（必要な場合）
-		if (context->outline) {
-			struct vec4 outline_color;
-			vec4_from_rgba(&outline_color, context->outline_color);
-			gs_effect_set_vec4(color_param, &outline_color);
-
-			// アウトラインの描画（上下左右に少しずらして描画）
-			for (int x = -1; x <= 1; x++) {
-				for (int y = -1; y <= 1; y++) {
-					if (x == 0 && y == 0)
-						continue;
-
-					gs_matrix_push();
-					if (context->align_center)
-						gs_matrix_translate3f(width / 2.0f + x, height / 2.0f + y, 0.0f);
-					else
-						gs_matrix_translate3f(x, y, 0.0f);
-
-					gs_font_draw(font_obj, context->text, 0, 0);
-					gs_matrix_pop();
-				}
-			}
-		}
-
-		// テキストの描画
-		struct vec4 text_color;
-		vec4_from_rgba(&text_color, context->color);
-		gs_effect_set_vec4(color_param, &text_color);
-
-		gs_matrix_push();
-		if (context->align_center)
-			gs_matrix_translate3f(width / 2.0f, height / 2.0f, 0.0f);
-
-		gs_font_draw(font_obj, context->text, 0, 0);
-		gs_matrix_pop();
-
-		gs_font_destroy(font_obj);
-	}
-
-	gs_technique_end_pass(tech);
-	gs_technique_end(tech);
-
-	gs_matrix_pop();
-	gs_texrender_end(context->texrender);
-
-	obs_leave_graphics();
-
-	context->text_updated = false;
-}
-
 static void match_counter_source_render(void *data, gs_effect_t *effect)
 {
 	UNUSED_PARAMETER(effect);
 	struct match_counter_source *context = data;
-	match_counter_t *counter = match_counter_get_global();
 
-	// テキストの更新が必要かチェック
-	const char *formatted_text = match_counter_get_formatted_text(counter);
-	if (!context->text || strcmp(context->text, formatted_text) != 0) {
-		bfree(context->text);
-		context->text = bstrdup(formatted_text);
-		context->text_updated = true;
+	// テキストソースがない場合は作成
+	if (!context->text_source) {
+		context->text_source = obs_source_create_private("text_gdiplus", "match_counter_text", NULL);
+		if (!context->text_source)
+			return;
 	}
 
-	if (!context->text || !strlen(context->text)) {
+	// テキストの更新が必要かチェック
+	match_counter_t *counter = match_counter_get_global();
+	const char *formatted_text = match_counter_get_formatted_text(counter);
+
+	if (!formatted_text || !strlen(formatted_text)) {
 		bfree((void *)formatted_text);
 		return;
 	}
 
-	// テキストをテクスチャにレンダリング
-	draw_text_to_texture(context);
+	// テキストソースの設定を更新
+	obs_data_t *settings = obs_data_create();
+	obs_data_set_string(settings, "text", formatted_text);
 
-	// テクスチャのレンダリング
-	if (context->texrender) {
-		gs_effect_t *default_effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
-		gs_technique_t *tech = gs_effect_get_technique(default_effect, "Draw");
+	// フォント設定
+	obs_data_t *font_obj = obs_data_create();
+	obs_data_set_string(font_obj, "face", context->font_name);
+	obs_data_set_int(font_obj, "size", context->font_size);
+	obs_data_set_int(font_obj, "flags", context->font_flags);
+	obs_data_set_obj(settings, "font", font_obj);
+	obs_data_release(font_obj);
 
-		gs_eparam_t *image = gs_effect_get_param_by_name(default_effect, "image");
-		gs_texture_t *texture = gs_texrender_get_texture(context->texrender);
+	obs_data_set_int(settings, "color", context->color);
+	obs_data_set_bool(settings, "outline", context->outline);
+	obs_data_set_int(settings, "outline_color", context->outline_color);
+	obs_data_set_int(settings, "outline_size", context->outline_width);
 
-		if (texture) {
-			gs_effect_set_texture(image, texture);
+	// アライメント設定
+	const char *align = context->align_center ? "center" : "left";
+	obs_data_set_string(settings, "align", align);
 
-			gs_technique_begin(tech);
-			gs_technique_begin_pass(tech, 0);
-
-			gs_draw_sprite(texture, 0, context->cx, context->cy);
-
-			gs_technique_end_pass(tech);
-			gs_technique_end(tech);
-		}
+	// サイズ設定
+	if (context->custom_width > 0) {
+		obs_data_set_bool(settings, "extents", true);
+		obs_data_set_int(settings, "extents_cx", context->custom_width);
+		obs_data_set_int(settings, "extents_cy", context->font_size * 2);
 	}
 
+	// テキストソースを更新
+	obs_source_update(context->text_source, settings);
+
+	// テキストソースのサイズを取得
+	context->cx = obs_source_get_width(context->text_source);
+	context->cy = obs_source_get_height(context->text_source);
+
+	// テキストソースをレンダリング
+	obs_source_video_render(context->text_source);
+
+	// リソースの解放
+	obs_data_release(settings);
 	bfree((void *)formatted_text);
 }
 
@@ -486,12 +416,19 @@ static void match_counter_source_get_defaults(obs_data_t *settings)
 	obs_data_set_default_string(settings, "format", "%n: %w - %l");
 	obs_data_set_default_string(settings, "player_name", "Player");
 
+	// フォント設定のデフォルト値
+	obs_data_t *font_obj = obs_data_create();
+	obs_data_set_string(font_obj, "face", "Arial");
+	obs_data_set_int(font_obj, "size", 32);
+	obs_data_set_int(font_obj, "flags", 0);
+	obs_data_set_default_obj(settings, "font", font_obj);
+	obs_data_release(font_obj);
+
 	// テキストスタイル設定のデフォルト値
-	obs_data_set_default_string(settings, "font", "Arial");
-	obs_data_set_default_int(settings, "font_size", 32);
 	obs_data_set_default_int(settings, "color", 0xFFFFFFFF); // 白
 	obs_data_set_default_bool(settings, "outline", true);
 	obs_data_set_default_int(settings, "outline_color", 0xFF000000); // 黒
+	obs_data_set_default_int(settings, "outline_size", 2);
 	obs_data_set_default_bool(settings, "align_center", true);
 	obs_data_set_default_int(settings, "custom_width", 0);
 }
