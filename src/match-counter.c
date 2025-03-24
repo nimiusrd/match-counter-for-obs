@@ -21,9 +21,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/platform.h>
 #include <util/dstr.h>
 
-// グローバルな試合カウンター
-static match_counter_t *global_counter = NULL;
-
 match_counter_t *match_counter_create(void)
 {
 	match_counter_t *counter = bzalloc(sizeof(match_counter_t));
@@ -153,20 +150,4 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 	}
 
 	return str.array;
-}
-
-match_counter_t *match_counter_get_global(void)
-{
-	if (!global_counter) {
-		global_counter = match_counter_create();
-	}
-	return global_counter;
-}
-
-void match_counter_free_global(void)
-{
-	if (global_counter) {
-		match_counter_destroy(global_counter);
-		global_counter = NULL;
-	}
 }

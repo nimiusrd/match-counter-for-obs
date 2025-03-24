@@ -117,17 +117,6 @@ void match_counter_set_format(match_counter_t *counter, const char *format);
  */
 char *match_counter_get_formatted_text(match_counter_t *counter);
 
-/**
- * グローバルな試合カウンターを取得する
- * @return グローバルな試合カウンター
- */
-match_counter_t *match_counter_get_global(void);
-
-/**
- * グローバルな試合カウンターを解放する
- */
-void match_counter_free_global(void);
-
 #ifdef __cplusplus
 }
 #endif

@@ -52,6 +52,8 @@ struct MatchCounterSource {
 	bool gradient;
 	bool align_center;
 	bool vertical_align_center;
+
+	match_counter_t *counter;
 };
 
 // 前方宣言
@@ -76,7 +78,7 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	blog(LOG_INFO, "match_counter_source_update: Updating match counter source");
 
 	struct MatchCounterSource *context = data;
-	match_counter_t *counter = match_counter_get_global();
+	context->counter = match_counter_create();
 
 	const char *format = obs_data_get_string(settings, "format");
 	uint32_t color = (uint32_t)obs_data_get_int(settings, "color");
@@ -113,7 +115,7 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 
 	obs_data_release(font_obj);
 
-	match_counter_set_format(counter, format);
+	match_counter_set_format(context->counter, format);
 
 	match_counter_source_render(context, NULL);
 
@@ -201,14 +203,13 @@ static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotk
 	UNUSED_PARAMETER(hotkey);
 
 	struct MatchCounterSource *context = data;
-	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_win_hotkey: Adding win");
-		match_counter_add_win(counter);
+		match_counter_add_win(context->counter);
 		obs_source_update_properties(context->source);
 		blog(LOG_DEBUG, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
-		     match_counter_get_wins(counter), match_counter_get_losses(counter));
+		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
 	}
 }
 
@@ -218,14 +219,13 @@ static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hot
 	UNUSED_PARAMETER(hotkey);
 
 	struct MatchCounterSource *context = data;
-	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_loss_hotkey: Adding loss");
-		match_counter_add_loss(counter);
+		match_counter_add_loss(context->counter);
 		obs_source_update_properties(context->source);
 		blog(LOG_DEBUG, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
-		     match_counter_get_wins(counter), match_counter_get_losses(counter));
+		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
 	}
 }
 
@@ -235,14 +235,13 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 	UNUSED_PARAMETER(hotkey);
 
 	struct MatchCounterSource *context = data;
-	match_counter_t *counter = match_counter_get_global();
 
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_reset_hotkey: Resetting counter");
-		match_counter_reset(counter);
+		match_counter_reset(context->counter);
 		obs_source_update_properties(context->source);
 		blog(LOG_DEBUG, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
-		     match_counter_get_wins(counter), match_counter_get_losses(counter));
+		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
 	}
 }
 
@@ -268,8 +267,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	}
 
 	// テキストの更新が必要かチェック
-	match_counter_t *counter = match_counter_get_global();
-	const char *formatted_text = match_counter_get_formatted_text(counter);
+	const char *formatted_text = match_counter_get_formatted_text(context->counter);
 
 	if (!formatted_text || !strlen(formatted_text)) {
 		blog(LOG_DEBUG, "match_counter_source_render: Empty text, skipping render");
@@ -334,8 +332,7 @@ static uint32_t match_counter_source_get_width(void *data)
 	}
 
 	// テクスチャがまだ作成されていない場合は簡易計算
-	match_counter_t *counter = match_counter_get_global();
-	const char *text = match_counter_get_formatted_text(counter);
+	const char *text = match_counter_get_formatted_text(context->counter);
 
 	if (!text || !strlen(text)) {
 		return 0;
@@ -356,7 +353,7 @@ static uint32_t match_counter_source_get_height(void *data)
 	}
 
 	// テクスチャがまだ作成されていない場合は固定値
-	return context->font_size > 0 ? context->font_size : 32;
+	return context->font_size > 0 ? context->font_size : 256;
 }
 
 static obs_properties_t *match_counter_source_get_properties(void *data)
@@ -393,10 +390,9 @@ static bool match_counter_add_win_button(obs_properties_t *props, obs_property_t
 {
 	UNUSED_PARAMETER(props);
 	UNUSED_PARAMETER(property);
-	UNUSED_PARAMETER(data);
+	struct MatchCounterSource *context = data;
 
-	match_counter_t *counter = match_counter_get_global();
-	match_counter_add_win(counter);
+	match_counter_add_win(context->counter);
 	return true;
 }
 
@@ -404,10 +400,9 @@ static bool match_counter_add_loss_button(obs_properties_t *props, obs_property_
 {
 	UNUSED_PARAMETER(props);
 	UNUSED_PARAMETER(property);
-	UNUSED_PARAMETER(data);
 
-	match_counter_t *counter = match_counter_get_global();
-	match_counter_add_loss(counter);
+	struct MatchCounterSource *context = data;
+	match_counter_add_loss(context->counter);
 	return true;
 }
 
@@ -415,10 +410,9 @@ static bool match_counter_subtract_win_button(obs_properties_t *props, obs_prope
 {
 	UNUSED_PARAMETER(props);
 	UNUSED_PARAMETER(property);
-	UNUSED_PARAMETER(data);
 
-	match_counter_t *counter = match_counter_get_global();
-	match_counter_subtract_win(counter);
+	struct MatchCounterSource *context = data;
+	match_counter_subtract_win(context->counter);
 	return true;
 }
 
@@ -426,10 +420,9 @@ static bool match_counter_subtract_loss_button(obs_properties_t *props, obs_prop
 {
 	UNUSED_PARAMETER(props);
 	UNUSED_PARAMETER(property);
-	UNUSED_PARAMETER(data);
 
-	match_counter_t *counter = match_counter_get_global();
-	match_counter_subtract_loss(counter);
+	struct MatchCounterSource *context = data;
+	match_counter_subtract_loss(context->counter);
 	return true;
 }
 
@@ -437,10 +430,9 @@ static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *
 {
 	UNUSED_PARAMETER(props);
 	UNUSED_PARAMETER(property);
-	UNUSED_PARAMETER(data);
 
-	match_counter_t *counter = match_counter_get_global();
-	match_counter_reset(counter);
+	struct MatchCounterSource *context = data;
+	match_counter_reset(context->counter);
 	return true;
 }
 
@@ -468,10 +460,8 @@ static void match_counter_source_get_defaults(obs_data_t *settings)
 
 static const char *match_counter_source_get_text(void *data)
 {
-	UNUSED_PARAMETER(data);
-	match_counter_t *counter = match_counter_get_global();
-
-	return match_counter_get_formatted_text(counter);
+	struct MatchCounterSource *context = data;
+	return match_counter_get_formatted_text(context->counter);
 }
 
 struct obs_source_info match_counter_source_info = {.id = "match_counter_source",

@@ -28,7 +28,7 @@ extern "C" {
 #include <plugin-support.h>
 }
 
-MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), counter(match_counter_get_global())
+MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), counter(match_counter_create())
 {
 	setWindowTitle(obs_module_text("MatchCounterTitle"));
 	setMinimumWidth(400);
