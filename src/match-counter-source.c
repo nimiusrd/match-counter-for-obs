@@ -63,6 +63,7 @@ static bool match_counter_add_loss_button(obs_properties_t *props, obs_property_
 static bool match_counter_subtract_win_button(obs_properties_t *props, obs_property_t *property, void *data);
 static bool match_counter_subtract_loss_button(obs_properties_t *props, obs_property_t *property, void *data);
 static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *property, void *data);
+static void match_counter_source_render(void *data, gs_effect_t *effect);
 
 static const char *match_counter_source_get_name(void *unused)
 {
