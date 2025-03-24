@@ -46,7 +46,6 @@ private slots:
 	void onSubtractWin();
 	void onSubtractLoss();
 	void onReset();
-	void onPlayerNameChanged(const QString &text);
 	void onFormatChanged(const QString &text);
 	void onWinsChanged(int value);
 	void onLossesChanged(int value);
@@ -59,7 +58,6 @@ private:
 	QHBoxLayout *buttonLayout;
 
 	QLabel *displayLabel;
-	QLineEdit *playerNameEdit;
 	QLineEdit *formatEdit;
 	QSpinBox *winsSpinBox;
 	QSpinBox *lossesSpinBox;

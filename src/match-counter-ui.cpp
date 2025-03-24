@@ -47,11 +47,6 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 	QGroupBox *settingsGroup = new QGroupBox(obs_module_text("Settings"), this);
 	formLayout = new QFormLayout(settingsGroup);
 
-	playerNameEdit = new QLineEdit(this);
-	playerNameEdit->setText(counter->player_name);
-	connect(playerNameEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onPlayerNameChanged);
-	formLayout->addRow(obs_module_text("PlayerName"), playerNameEdit);
-
 	formatEdit = new QLineEdit(this);
 	formatEdit->setText(counter->format);
 	formatEdit->setToolTip(obs_module_text("FormatTooltip"));
@@ -151,12 +146,6 @@ void MatchCounterDialog::onReset()
 	match_counter_reset(counter);
 	winsSpinBox->setValue(counter->wins);
 	lossesSpinBox->setValue(counter->losses);
-	updateDisplay();
-}
-
-void MatchCounterDialog::onPlayerNameChanged(const QString &text)
-{
-	match_counter_set_player_name(counter, text.toUtf8().constData());
 	updateDisplay();
 }
 
