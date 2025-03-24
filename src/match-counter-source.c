@@ -27,7 +27,6 @@ struct MatchCounterSource {
 	obs_hotkey_id loss_hotkey;
 	obs_hotkey_id reset_hotkey;
 	char *format;
-	char *player_name;
 
 	// テキスト描画用の設定
 	gs_texrender_t *texrender;
@@ -79,7 +78,6 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	match_counter_t *counter = match_counter_get_global();
 
 	const char *format = obs_data_get_string(settings, "format");
-	const char *player_name = obs_data_get_string(settings, "player_name");
 	uint32_t color = (uint32_t)obs_data_get_int(settings, "color");
 	uint32_t outline_color = (uint32_t)obs_data_get_int(settings, "outline_color");
 	bool outline = obs_data_get_bool(settings, "outline");
@@ -99,11 +97,9 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 		font_size = 32;
 
 	bfree(context->format);
-	bfree(context->player_name);
 	bfree(context->font_name);
 
 	context->format = bstrdup(format);
-	context->player_name = bstrdup(player_name);
 	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
 	context->color = color;
 	context->outline_color = outline_color;
@@ -117,9 +113,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	obs_data_release(font_obj);
 
 	match_counter_set_format(counter, format);
-	match_counter_set_player_name(counter, player_name);
 
-	blog(LOG_DEBUG, "match_counter_source_update: Updated with format='%s', player_name='%s'", format, player_name);
+	blog(LOG_DEBUG, "match_counter_source_update: Updated with format='%s'", format);
 }
 
 static void *match_counter_source_create(obs_data_t *settings, obs_source_t *source)
@@ -128,8 +123,7 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 
 	struct MatchCounterSource *context = bzalloc(sizeof(struct MatchCounterSource));
 	context->source = source;
-	context->format = bstrdup("%n: %w - %l");
-	context->player_name = bstrdup("Player");
+	context->format = bstrdup("%w - %l");
 
 	// テキスト描画用の設定
 	context->texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
@@ -145,8 +139,7 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	context->vertical_align_center = true;
 	context->text_updated = true;
 
-	blog(LOG_DEBUG, "match_counter_source_create: Initializing with format='%s', player_name='%s'", context->format,
-	     context->player_name);
+	blog(LOG_DEBUG, "match_counter_source_create: Initializing with format='%s'", context->format);
 
 	match_counter_source_update(context, settings);
 
@@ -192,7 +185,6 @@ static void match_counter_source_destroy(void *data)
 	}
 
 	bfree(context->format);
-	bfree(context->player_name);
 	bfree(context->font_name);
 	bfree(context->text);
 	bfree(context);
@@ -371,7 +363,6 @@ static obs_properties_t *match_counter_source_get_properties(void *data)
 	obs_properties_t *props = obs_properties_create();
 
 	// カウンター設定
-	obs_properties_add_text(props, "player_name", obs_module_text("PlayerName"), OBS_TEXT_DEFAULT);
 	obs_properties_add_text(props, "format", obs_module_text("Format"), OBS_TEXT_DEFAULT);
 
 	// テキストスタイル設定
@@ -453,8 +444,7 @@ static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *
 static void match_counter_source_get_defaults(obs_data_t *settings)
 {
 	// カウンター設定のデフォルト値
-	obs_data_set_default_string(settings, "format", "%n: %w - %l");
-	obs_data_set_default_string(settings, "player_name", "Player");
+	obs_data_set_default_string(settings, "format", "%w - %l");
 
 	// フォント設定のデフォルト値
 	obs_data_t *font_obj = obs_data_create();

@@ -29,8 +29,7 @@ match_counter_t *match_counter_create(void)
 	match_counter_t *counter = bzalloc(sizeof(match_counter_t));
 	counter->wins = 0;
 	counter->losses = 0;
-	counter->format = bstrdup("%n: %w - %l");
-	counter->player_name = bstrdup("Player");
+	counter->format = bstrdup("%w - %l");
 	return counter;
 }
 
@@ -40,7 +39,6 @@ void match_counter_destroy(match_counter_t *counter)
 		return;
 
 	bfree(counter->format);
-	bfree(counter->player_name);
 	bfree(counter);
 }
 
@@ -110,15 +108,6 @@ void match_counter_set_format(match_counter_t *counter, const char *format)
 	counter->format = bstrdup(format);
 }
 
-void match_counter_set_player_name(match_counter_t *counter, const char *name)
-{
-	if (!counter || !name)
-		return;
-
-	bfree(counter->player_name);
-	counter->player_name = bstrdup(name);
-}
-
 char *match_counter_get_formatted_text(match_counter_t *counter)
 {
 	if (!counter)
@@ -126,7 +115,6 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 
 	struct dstr str = {0};
 	const char *format = counter->format;
-	const char *player_name = counter->player_name;
 	int wins = counter->wins;
 	int losses = counter->losses;
 
@@ -139,8 +127,6 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 				dstr_catf(&str, "%d", wins);
 			} else if (*format == 'l') {
 				dstr_catf(&str, "%d", losses);
-			} else if (*format == 'n') {
-				dstr_cat(&str, player_name);
 			} else {
 				dstr_catf(&str, "%%%c", *format);
 			}

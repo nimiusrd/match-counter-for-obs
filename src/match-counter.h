@@ -30,10 +30,9 @@ extern "C" {
  * 試合結果の構造体
  */
 typedef struct match_counter {
-	int wins;          // 勝利数
-	int losses;        // 敗北数
-	char *format;      // 表示フォーマット
-	char *player_name; // プレイヤー名
+	int wins;     // 勝利数
+	int losses;   // 敗北数
+	char *format; // 表示フォーマット
 } match_counter_t;
 
 /**
@@ -100,16 +99,8 @@ int match_counter_get_losses(match_counter_t *counter);
  * フォーマット文字列では以下の変数が使用可能:
  * %w - 勝利数
  * %l - 敗北数
- * %n - プレイヤー名
  */
 void match_counter_set_format(match_counter_t *counter, const char *format);
-
-/**
- * プレイヤー名を設定する
- * @param counter 試合カウンター
- * @param name プレイヤー名
- */
-void match_counter_set_player_name(match_counter_t *counter, const char *name);
 
 /**
  * フォーマットされた文字列を取得する
