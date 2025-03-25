@@ -35,43 +35,43 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 	// メインレイアウト
-	mainLayout = new QVBoxLayout(this);
+	mainLayout = new QVBoxLayout(parent);
 
 	// 表示部分
-	displayLabel = new QLabel(this);
+	displayLabel = new QLabel(parent);
 	displayLabel->setAlignment(Qt::AlignCenter);
 	displayLabel->setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;");
 	mainLayout->addWidget(displayLabel);
 
 	// フォーム部分
-	QGroupBox *settingsGroup = new QGroupBox(obs_module_text("Settings"), this);
+	QGroupBox *settingsGroup = new QGroupBox(obs_module_text("Settings"), parent);
 	formLayout = new QFormLayout(settingsGroup);
 
-	formatEdit = new QLineEdit(this);
+	formatEdit = new QLineEdit(parent);
 	formatEdit->setText(match_counter_get_format(counter));
 	formatEdit->setToolTip(obs_module_text("FormatTooltip"));
-	connect(formatEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onFormatChanged);
+	connect(formatEdit, &QLineEdit::textChanged, parent, &MatchCounterDialog::onFormatChanged);
 	formLayout->addRow(obs_module_text("Format"), formatEdit);
 
 	// カウンター部分
-	QGroupBox *counterGroup = new QGroupBox(obs_module_text("Counter"), this);
+	QGroupBox *counterGroup = new QGroupBox(obs_module_text("Counter"), parent);
 	counterLayout = new QHBoxLayout(counterGroup);
 
-	QLabel *winsLabel = new QLabel(obs_module_text("Wins"), this);
-	winsSpinBox = new QSpinBox(this);
+	QLabel *winsLabel = new QLabel(obs_module_text("Wins"), parent);
+	winsSpinBox = new QSpinBox(parent);
 	winsSpinBox->setRange(0, 999);
 	winsSpinBox->setValue(match_counter_get_wins(counter));
-	connect(winsSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &MatchCounterDialog::onWinsChanged);
+	connect(winsSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), parent, &MatchCounterDialog::onWinsChanged);
 
-	QLabel *lossesLabel = new QLabel(obs_module_text("Losses"), this);
-	lossesSpinBox = new QSpinBox(this);
+	QLabel *lossesLabel = new QLabel(obs_module_text("Losses"), parent);
+	lossesSpinBox = new QSpinBox(parent);
 	lossesSpinBox->setRange(0, 999);
 	lossesSpinBox->setValue(match_counter_get_losses(counter));
-	connect(lossesSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &MatchCounterDialog::onLossesChanged);
+	connect(lossesSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), parent, &MatchCounterDialog::onLossesChanged);
 
 	// 勝率表示
-	QLabel *winRateLabel = new QLabel(obs_module_text("WinRate"), this);
-	winRateValueLabel = new QLabel(QString::number(match_counter_get_win_rate(counter) * 100.0f, 'f', 1) + "%", this);
+	QLabel *winRateLabel = new QLabel(obs_module_text("WinRate"), parent);
+	winRateValueLabel = new QLabel(QString::number(match_counter_get_win_rate(counter) * 100.0f, 'f', 1) + "%", parent);
 	winRateValueLabel->setAlignment(Qt::AlignCenter);
 	winRateValueLabel->setStyleSheet("font-weight: bold;");
 
@@ -84,11 +84,11 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 
 
 	// ボタン部分
-	QGroupBox *buttonGroup = new QGroupBox(obs_module_text("Actions"), this);
+	QGroupBox *buttonGroup = new QGroupBox(obs_module_text("Actions"), parent);
 	buttonLayout = new QHBoxLayout(buttonGroup);
 
-	resetButton = new QPushButton(obs_module_text("Reset"), this);
-	connect(resetButton, &QPushButton::clicked, this, &MatchCounterDialog::onReset);
+	resetButton = new QPushButton(obs_module_text("Reset"), parent);
+	connect(resetButton, &QPushButton::clicked, parent, &MatchCounterDialog::onReset);
 
 	buttonLayout->addWidget(resetButton);
 
