@@ -113,6 +113,9 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->custom_width = custom_width;
 	context->text_updated = true;
 
+	context->counter->wins = (int)obs_data_get_int(settings, "wins");
+	context->counter->losses = (int)obs_data_get_int(settings, "losses");
+
 	obs_data_release(font_obj);
 
 	match_counter_set_format(context->counter, format);
@@ -356,9 +359,10 @@ static uint32_t match_counter_source_get_height(void *data)
 	return context->font_size > 0 ? context->font_size : 256;
 }
 
-static obs_properties_t *match_counter_source_get_properties(void *data)
+static obs_properties_t *match_counter_source_get_properties(void *data, void *type_data)
 {
 	UNUSED_PARAMETER(data);
+	UNUSED_PARAMETER(type_data);
 
 	obs_properties_t *props = obs_properties_create();
 
@@ -441,8 +445,9 @@ static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *
 	return true;
 }
 
-static void match_counter_source_get_defaults(obs_data_t *settings)
+static void match_counter_source_get_defaults(void *type_data, obs_data_t *settings)
 {
+	UNUSED_PARAMETER(type_data);
 	// カウンター設定のデフォルト値
 	obs_data_set_default_string(settings, "format", "%w - %l (%r)");
 
@@ -478,8 +483,8 @@ struct obs_source_info match_counter_source_info = {.id = "match_counter_source"
 						    .create = match_counter_source_create,
 						    .destroy = match_counter_source_destroy,
 						    .update = match_counter_source_update,
-						    .get_properties = match_counter_source_get_properties,
-						    .get_defaults = match_counter_source_get_defaults,
+						    .get_properties2 = match_counter_source_get_properties,
+						    .get_defaults2 = match_counter_source_get_defaults,
 						    .get_width = match_counter_source_get_width,
 						    .get_height = match_counter_source_get_height,
 						    .video_render = match_counter_source_render};
