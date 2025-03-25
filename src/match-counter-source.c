@@ -364,7 +364,8 @@ static obs_properties_t *match_counter_source_get_properties(void *data)
 
 	// カウンター設定
 	obs_properties_add_text(props, "format", obs_module_text("Format"), OBS_TEXT_DEFAULT);
-	
+	obs_property_set_description(obs_properties_get(props, "format"), obs_module_text("FormatTooltip"));
+
 	// 勝敗数設定
 	obs_properties_add_int(props, "wins", obs_module_text("Wins"), 0, INT_MAX, 1);
 	obs_properties_add_int(props, "losses", obs_module_text("Losses"), 0, INT_MAX, 1);

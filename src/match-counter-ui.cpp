@@ -40,7 +40,7 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 	// formatEdit = new QLineEdit(this);
 	// formatEdit->setText(match_counter_get_format(counter));
 	// formatEdit->setToolTip(obs_module_text("FormatTooltip"));
-    // connect(formatEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onFormatChanged);
+	// connect(formatEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onFormatChanged);
 	// formLayout->addRow(obs_module_text("Format"), formatEdit);
 
 	// // カウンター部分
@@ -171,10 +171,8 @@ void MatchCounterDialog::updateDisplay()
 	winRateValueLabel->setText(QString::number(win_rate * 100.0f, 'f', 1) + "%");
 
 	// デバッグログ
-	blog(LOG_INFO, "Wins: %d, Losses: %d, WinRate: %.1f%%",
-		match_counter_get_wins(counter),
-		match_counter_get_losses(counter),
-		win_rate * 100.0f);
+	blog(LOG_INFO, "Wins: %d, Losses: %d, WinRate: %.1f%%", match_counter_get_wins(counter),
+	     match_counter_get_losses(counter), win_rate * 100.0f);
 }
 
 // メニューアクションのコールバック
