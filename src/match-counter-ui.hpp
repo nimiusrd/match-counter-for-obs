@@ -28,9 +28,16 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QGroupBox>
 #include <QFormLayout>
 #include <memory>
+#include <obs-frontend-api.h>
+#include <QMainWindow>
+#include <QAction>
+#include <QMessageBox>
+#include <util/bmem.h>
 
 extern "C" {
 #include "match-counter.h"
+#include <obs-module.h>
+#include <plugin-support.h>
 }
 
 class MatchCounterDialog : public QDialog {

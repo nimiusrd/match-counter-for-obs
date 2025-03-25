@@ -17,25 +17,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
 #include "match-counter-ui.hpp"
-#include <obs-frontend-api.h>
-#include <QMainWindow>
-#include <QMenuBar>
-#include <QAction>
-#include <QMessageBox>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QGroupBox>
-#include <QFormLayout>
-#include <QLineEdit>
-#include <QSpinBox>
-#include <QPushButton>
-#include <util/bmem.h> // bfree を使用するために必要
-
-extern "C" {
-#include <obs-module.h>
-#include <plugin-support.h>
-}
 
 MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), counter(match_counter_create())
 {
@@ -46,66 +27,66 @@ MatchCounterDialog::MatchCounterDialog(QWidget *parent) : QDialog(parent), count
 	// メインレイアウト
 	mainLayout = new QVBoxLayout(this);
 
-	// 表示部分
-	displayLabel = new QLabel(this);
-	displayLabel->setAlignment(Qt::AlignCenter);
-	displayLabel->setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;");
-	mainLayout->addWidget(displayLabel);
+	// // 表示部分
+	// displayLabel = new QLabel(this);
+	// displayLabel->setAlignment(Qt::AlignCenter);
+	// displayLabel->setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;");
+	// mainLayout->addWidget(displayLabel);
 
-	// フォーム部分
-	QGroupBox *settingsGroup = new QGroupBox(obs_module_text("Settings"), this);
-	formLayout = new QFormLayout(settingsGroup);
+	// // フォーム部分
+	// QGroupBox *settingsGroup = new QGroupBox(obs_module_text("Settings"), this);
+	// formLayout = new QFormLayout(settingsGroup);
 
-	formatEdit = new QLineEdit(this);
-	formatEdit->setText(match_counter_get_format(counter));
-	formatEdit->setToolTip(obs_module_text("FormatTooltip"));
-    connect(formatEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onFormatChanged);
-	formLayout->addRow(obs_module_text("Format"), formatEdit);
+	// formatEdit = new QLineEdit(this);
+	// formatEdit->setText(match_counter_get_format(counter));
+	// formatEdit->setToolTip(obs_module_text("FormatTooltip"));
+    // connect(formatEdit, &QLineEdit::textChanged, this, &MatchCounterDialog::onFormatChanged);
+	// formLayout->addRow(obs_module_text("Format"), formatEdit);
 
-	// カウンター部分
-	QGroupBox *counterGroup = new QGroupBox(obs_module_text("Counter"), this);
-	counterLayout = new QHBoxLayout(counterGroup);
+	// // カウンター部分
+	// QGroupBox *counterGroup = new QGroupBox(obs_module_text("Counter"), this);
+	// counterLayout = new QHBoxLayout(counterGroup);
 
-	QLabel *winsLabel = new QLabel(obs_module_text("Wins"), this);
-	winsSpinBox = new QSpinBox(this);
-	winsSpinBox->setRange(0, 999);
-	winsSpinBox->setValue(match_counter_get_wins(counter));
-	connect(winsSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &MatchCounterDialog::onWinsChanged);
+	// QLabel *winsLabel = new QLabel(obs_module_text("Wins"), this);
+	// winsSpinBox = new QSpinBox(this);
+	// winsSpinBox->setRange(0, 999);
+	// winsSpinBox->setValue(match_counter_get_wins(counter));
+	// connect(winsSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &MatchCounterDialog::onWinsChanged);
 
-	QLabel *lossesLabel = new QLabel(obs_module_text("Losses"), this);
-	lossesSpinBox = new QSpinBox(this);
-	lossesSpinBox->setRange(0, 999);
-	lossesSpinBox->setValue(match_counter_get_losses(counter));
-	connect(lossesSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this,
-		&MatchCounterDialog::onLossesChanged);
+	// QLabel *lossesLabel = new QLabel(obs_module_text("Losses"), this);
+	// lossesSpinBox = new QSpinBox(this);
+	// lossesSpinBox->setRange(0, 999);
+	// lossesSpinBox->setValue(match_counter_get_losses(counter));
+	// connect(lossesSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this,
+	// 	&MatchCounterDialog::onLossesChanged);
 
-	// 勝率表示
-	QLabel *winRateLabel = new QLabel(obs_module_text("WinRate"), this);
-	winRateValueLabel =
-		new QLabel(QString::number(match_counter_get_win_rate(counter) * 100.0f, 'f', 1) + "%", this);
-	winRateValueLabel->setAlignment(Qt::AlignCenter);
-	winRateValueLabel->setStyleSheet("font-weight: bold;");
+	// // 勝率表示
+	// QLabel *winRateLabel = new QLabel(obs_module_text("WinRate"), this);
+	// winRateValueLabel =
+	// 	new QLabel(QString::number(match_counter_get_win_rate(counter) * 100.0f, 'f', 1) + "%", this);
+	// winRateValueLabel->setAlignment(Qt::AlignCenter);
+	// winRateValueLabel->setStyleSheet("font-weight: bold;");
 
-	counterLayout->addWidget(winsLabel);
-	counterLayout->addWidget(winsSpinBox);
-	counterLayout->addWidget(lossesLabel);
-	counterLayout->addWidget(lossesSpinBox);
-	counterLayout->addWidget(winRateLabel);
-	counterLayout->addWidget(winRateValueLabel);
+	// counterLayout->addWidget(winsLabel);
+	// counterLayout->addWidget(winsSpinBox);
+	// counterLayout->addWidget(lossesLabel);
+	// counterLayout->addWidget(lossesSpinBox);
+	// counterLayout->addWidget(winRateLabel);
+	// counterLayout->addWidget(winRateValueLabel);
 
-	// ボタン部分
-	QGroupBox *buttonGroup = new QGroupBox(obs_module_text("Actions"), this);
-	buttonLayout = new QHBoxLayout(buttonGroup);
+	// // ボタン部分
+	// QGroupBox *buttonGroup = new QGroupBox(obs_module_text("Actions"), this);
+	// buttonLayout = new QHBoxLayout(buttonGroup);
 
-	resetButton = new QPushButton(obs_module_text("Reset"), this);
-	connect(resetButton, &QPushButton::clicked, this, &MatchCounterDialog::onReset);
+	// resetButton = new QPushButton(obs_module_text("Reset"), this);
+	// connect(resetButton, &QPushButton::clicked, this, &MatchCounterDialog::onReset);
 
-	buttonLayout->addWidget(resetButton);
+	// buttonLayout->addWidget(resetButton);
 
-	// レイアウトに追加
-	mainLayout->addWidget(settingsGroup);
-	mainLayout->addWidget(counterGroup);
-	mainLayout->addWidget(buttonGroup);
+	// // レイアウトに追加
+	// mainLayout->addWidget(settingsGroup);
+	// mainLayout->addWidget(counterGroup);
+	// mainLayout->addWidget(buttonGroup);
 
 	// 表示を更新
 	updateDisplay();
@@ -195,10 +176,6 @@ void MatchCounterDialog::updateDisplay()
 		match_counter_get_losses(counter),
 		win_rate * 100.0f);
 }
-
-// グローバル変数
-// 将来的に使用する可能性があるため宣言しておく
-// static QAction *action = nullptr;
 
 // メニューアクションのコールバック
 static void menu_action_clicked()
