@@ -40,13 +40,15 @@ public:
 	explicit MatchCounterDialog(QWidget *parent = nullptr);
 	~MatchCounterDialog();
 
+protected slots:
+	void onFormatChanged(const QString &text);
+
 private slots:
 	void onAddWin();
 	void onAddLoss();
 	void onSubtractWin();
 	void onSubtractLoss();
 	void onReset();
-	void onFormatChanged(const QString &text);
 	void onWinsChanged(int value);
 	void onLossesChanged(int value);
 	void updateDisplay();
