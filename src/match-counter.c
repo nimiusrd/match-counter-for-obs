@@ -26,7 +26,7 @@ match_counter_t *match_counter_create(void)
 	match_counter_t *counter = bzalloc(sizeof(match_counter_t));
 	counter->wins = 0;
 	counter->losses = 0;
-	counter->format = bstrdup("%w - %l (%r)");
+	counter->format = bstrdup("%w-%l(%r)");
 	return counter;
 }
 
