@@ -39,18 +39,11 @@ struct MatchCounterSource {
 	obs_source_t *text_source;
 
 	// テキストのスタイル設定
-	uint32_t color;
-	uint32_t color2;
-	uint32_t custom_width;
-	uint32_t outline_width;
-	uint32_t outline_color;
 	char *font_name;
 	uint16_t font_size;
 	uint32_t font_flags;
-	bool outline;
-	bool gradient;
-	bool align_center;
-	bool vertical_align_center;
+	bool underline;
+	bool strikeout;
 
 	match_counter_t *counter;
 };
@@ -59,11 +52,6 @@ struct MatchCounterSource {
 static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
 static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
 static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
-static bool match_counter_add_win_button(obs_properties_t *props, obs_property_t *property, void *data);
-static bool match_counter_add_loss_button(obs_properties_t *props, obs_property_t *property, void *data);
-static bool match_counter_subtract_win_button(obs_properties_t *props, obs_property_t *property, void *data);
-static bool match_counter_subtract_loss_button(obs_properties_t *props, obs_property_t *property, void *data);
-static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *property, void *data);
 static void match_counter_source_render(void *data, gs_effect_t *effect);
 
 static const char *match_counter_source_get_name(void *unused)
@@ -86,6 +74,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	const char *font_name = obs_data_get_string(font_obj, "face");
 	uint16_t font_size = (uint16_t)obs_data_get_int(font_obj, "size");
 	uint32_t font_flags = (uint32_t)obs_data_get_int(font_obj, "flags");
+	bool underline = obs_data_get_bool(font_obj, "underline");
+	bool strikeout = obs_data_get_bool(font_obj, "strikeout");
 
 	blog(LOG_DEBUG, "match_counter_source_update: Font settings - name='%s', size=%d, flags=%d",
 	     font_name && strlen(font_name) ? font_name : "Arial", font_size, font_flags);
@@ -100,6 +90,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
 	context->font_size = font_size;
 	context->font_flags = font_flags;
+	context->underline = underline;
+	context->strikeout = strikeout;
 
 	context->counter->wins = (int)obs_data_get_int(settings, "wins");
 	context->counter->losses = (int)obs_data_get_int(settings, "losses");
@@ -119,7 +111,7 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 
 	struct MatchCounterSource *context = bzalloc(sizeof(struct MatchCounterSource));
 	context->source = source;
-	context->format = bstrdup("%w - %l (%r)");
+	context->format = bstrdup("%w-%l(%r)");
 
 	// テキスト描画用の設定
 	context->texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
@@ -269,6 +261,8 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	obs_data_set_string(font_obj, "face", context->font_name);
 	obs_data_set_int(font_obj, "size", context->font_size);
 	obs_data_set_int(font_obj, "flags", context->font_flags);
+	obs_data_set_bool(font_obj, "underline", context->underline);
+	obs_data_set_bool(font_obj, "strikeout", context->strikeout);
 	obs_data_set_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
 
