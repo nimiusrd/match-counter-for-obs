@@ -81,11 +81,6 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->counter = match_counter_create();
 
 	const char *format = obs_data_get_string(settings, "format");
-	uint32_t color = (uint32_t)obs_data_get_int(settings, "color");
-	uint32_t outline_color = (uint32_t)obs_data_get_int(settings, "outline_color");
-	bool outline = obs_data_get_bool(settings, "outline");
-	bool align_center = obs_data_get_bool(settings, "align_center");
-	uint32_t custom_width = (uint32_t)obs_data_get_int(settings, "custom_width");
 
 	// フォント設定の取得
 	obs_data_t *font_obj = obs_data_get_obj(settings, "font");
@@ -104,14 +99,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 
 	context->format = bstrdup(format);
 	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
-	context->color = color;
-	context->outline_color = outline_color;
-	context->outline = outline;
-	context->align_center = align_center;
 	context->font_size = font_size;
 	context->font_flags = font_flags;
-	context->custom_width = custom_width;
-	context->text_updated = true;
 
 	context->counter->wins = (int)obs_data_get_int(settings, "wins");
 	context->counter->losses = (int)obs_data_get_int(settings, "losses");
@@ -138,14 +127,6 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	context->font_name = bstrdup("Arial");
 	context->font_size = 32;
 	context->font_flags = 0;
-	context->color = 0xFFFFFFFF; // 白
-	context->color2 = 0xFFFFFFFF;
-	context->outline_color = 0xFF000000; // 黒
-	context->outline_width = 2;
-	context->custom_width = 0;
-	context->align_center = true;
-	context->vertical_align_center = true;
-	context->text_updated = true;
 
 	blog(LOG_DEBUG, "match_counter_source_create: Initializing with format='%s'", context->format);
 
@@ -292,22 +273,6 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	obs_data_set_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
 
-	obs_data_set_int(settings, "color", context->color);
-	obs_data_set_bool(settings, "outline", context->outline);
-	obs_data_set_int(settings, "outline_color", context->outline_color);
-	obs_data_set_int(settings, "outline_size", context->outline_width);
-
-	// アライメント設定
-	const char *align = context->align_center ? "center" : "left";
-	obs_data_set_string(settings, "align", align);
-
-	// サイズ設定
-	if (context->custom_width > 0) {
-		obs_data_set_bool(settings, "extents", true);
-		obs_data_set_int(settings, "extents_cx", context->custom_width);
-		obs_data_set_int(settings, "extents_cy", context->font_size * 2);
-	}
-
 	// テキストソースを更新
 	obs_source_update(context->text_source, settings);
 
@@ -376,12 +341,6 @@ static obs_properties_t *match_counter_source_get_properties(void *data, void *t
 
 	// テキストスタイル設定
 	obs_properties_add_font(props, "font", obs_module_text("Font"));
-	obs_properties_add_int(props, "font_size", obs_module_text("FontSize"), 8, 256, 1);
-	obs_properties_add_color(props, "color", obs_module_text("Color"));
-	obs_properties_add_bool(props, "outline", obs_module_text("Outline"));
-	obs_properties_add_color(props, "outline_color", obs_module_text("OutlineColor"));
-	obs_properties_add_bool(props, "align_center", obs_module_text("AlignCenter"));
-	obs_properties_add_int(props, "custom_width", obs_module_text("CustomWidth"), 0, 4096, 1);
 
 	return props;
 }
@@ -390,7 +349,7 @@ static void match_counter_source_get_defaults(void *type_data, obs_data_t *setti
 {
 	UNUSED_PARAMETER(type_data);
 	// カウンター設定のデフォルト値
-	obs_data_set_default_string(settings, "format", "%w - %l (%r)");
+	obs_data_set_default_string(settings, "format", "%w-%l(%r)");
 
 	// フォント設定のデフォルト値
 	obs_data_t *font_obj = obs_data_create();
@@ -399,14 +358,6 @@ static void match_counter_source_get_defaults(void *type_data, obs_data_t *setti
 	obs_data_set_int(font_obj, "flags", 0);
 	obs_data_set_default_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
-
-	// テキストスタイル設定のデフォルト値
-	obs_data_set_default_int(settings, "color", 0xFFFFFFFF); // 白
-	obs_data_set_default_bool(settings, "outline", true);
-	obs_data_set_default_int(settings, "outline_color", 0xFF000000); // 黒
-	obs_data_set_default_int(settings, "outline_size", 2);
-	obs_data_set_default_bool(settings, "align_center", true);
-	obs_data_set_default_int(settings, "custom_width", 0);
 }
 
 static const char *match_counter_source_get_text(void *data)
