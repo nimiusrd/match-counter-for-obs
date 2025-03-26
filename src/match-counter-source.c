@@ -287,7 +287,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	context->cx = obs_source_get_width(context->text_source);
 	context->cy = obs_source_get_height(context->text_source);
 
-	blog(LOG_INFO, "match_counter_source_render: Text dimensions - width=%d, height=%d", context->cx, context->cy);
+	blog(LOG_DEBUG, "match_counter_source_render: Text dimensions - width=%d, height=%d", context->cx, context->cy);
 
 	// テキストソースをレンダリング
 	obs_source_video_render(context->text_source);
