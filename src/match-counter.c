@@ -161,6 +161,9 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 				dstr_catf(&str, "%d", wins);
 			} else if (*format == 'l') {
 				dstr_catf(&str, "%d", losses);
+			} else if (*format == 't') {
+				// 総試合数（wins+losses）
+				dstr_catf(&str, "%d", wins + losses);
 			} else if (*format == 'r') {
 				// 勝率をパーセント表示（小数点以下1桁）
 				dstr_catf(&str, "%.1f%%", win_rate * 100.0f);
