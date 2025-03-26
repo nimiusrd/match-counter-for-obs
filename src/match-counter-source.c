@@ -87,8 +87,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->font_size = font_size;
 	context->font_flags = font_flags;
 
-	obs_data_set_int(settings, "wins", context->counter->wins);
-	obs_data_set_int(settings, "losses", context->counter->losses);
+	context->counter->wins = (int)obs_data_get_int(settings, "wins");
+	context->counter->losses = (int)obs_data_get_int(settings, "losses");
 
 	obs_data_release(font_obj);
 
@@ -257,6 +257,9 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	obs_data_set_int(font_obj, "flags", context->font_flags);
 	obs_data_set_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
+
+	obs_data_set_int(settings, "wins", context->counter->wins);
+	obs_data_set_int(settings, "losses", context->counter->losses);
 
 	// テキストソースを更新
 	obs_source_update(context->text_source, settings);
