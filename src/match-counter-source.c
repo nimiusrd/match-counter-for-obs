@@ -73,7 +73,7 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	uint16_t font_size = (uint16_t)obs_data_get_int(font_obj, "size");
 	uint32_t font_flags = (uint32_t)obs_data_get_int(font_obj, "flags");
 
-	blog(LOG_INFO, "match_counter_source_update: Font settings - name='%s', size=%d, flags=%d",
+	blog(LOG_DEBUG, "match_counter_source_update: Font settings - name='%s', size=%d, flags=%d",
 	     font_name && strlen(font_name) ? font_name : "Arial", font_size, font_flags);
 
 	if (font_size <= 0)
@@ -96,7 +96,7 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 
 	match_counter_source_render(context, NULL);
 
-	blog(LOG_INFO, "match_counter_source_update: Updated with format='%s'", format);
+	blog(LOG_DEBUG, "match_counter_source_update: Updated with format='%s'", format);
 }
 
 static void *match_counter_source_create(obs_data_t *settings, obs_source_t *source)
@@ -113,7 +113,7 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	context->font_size = 32;
 	context->font_flags = 0;
 
-	blog(LOG_INFO, "match_counter_source_create: Initializing with format='%s'", context->format);
+	blog(LOG_DEBUG, "match_counter_source_create: Initializing with format='%s'", context->format);
 
 	match_counter_source_update(context, settings);
 
@@ -153,7 +153,7 @@ static void match_counter_source_destroy(void *data)
 
 	// テキストソースの解放
 	if (context->text_source) {
-		blog(LOG_INFO, "match_counter_source_destroy: Releasing text source");
+		blog(LOG_DEBUG, "match_counter_source_destroy: Releasing text source");
 		obs_source_release(context->text_source);
 		context->text_source = NULL;
 	}
@@ -184,7 +184,7 @@ static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotk
 		obs_data_release(settings);
 
 		obs_source_update_properties(context->source);
-		blog(LOG_INFO, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
+		blog(LOG_DEBUG, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
 		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
 	}
 }
@@ -207,7 +207,7 @@ static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hot
 		obs_data_release(settings);
 
 		obs_source_update_properties(context->source);
-		blog(LOG_INFO, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
+		blog(LOG_DEBUG, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
 		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
 	}
 }
@@ -231,7 +231,7 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 		obs_data_release(settings);
 
 		obs_source_update_properties(context->source);
-		blog(LOG_INFO, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
+		blog(LOG_DEBUG, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
 		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
 	}
 }
@@ -243,7 +243,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 
 	// テキストソースがない場合は作成
 	if (!context->text_source) {
-		blog(LOG_INFO, "match_counter_source_render: Creating text source");
+		blog(LOG_DEBUG, "match_counter_source_render: Creating text source");
 #ifdef _WIN32
 		context->text_source = obs_source_create_private("text_gdiplus", "match_counter_text", NULL);
 #else
@@ -254,7 +254,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 			blog(LOG_ERROR, "match_counter_source_render: Failed to create text source");
 			return;
 		}
-		blog(LOG_INFO, "match_counter_source_render: Text source created successfully");
+		blog(LOG_DEBUG, "match_counter_source_render: Text source created successfully");
 	}
 
 	// テキストの更新が必要かチェック
@@ -266,7 +266,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 		return;
 	}
 
-	blog(LOG_INFO, "match_counter_source_render: Rendering text '%s'", formatted_text);
+	blog(LOG_DEBUG, "match_counter_source_render: Rendering text '%s'", formatted_text);
 
 	// テキストソースの設定を更新
 	obs_data_t *settings = obs_data_create();
