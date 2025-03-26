@@ -374,9 +374,6 @@ static obs_properties_t *match_counter_source_get_properties(void *data, void *t
 	obs_properties_add_int(props, "wins", obs_module_text("Wins"), 0, INT_MAX, 1);
 	obs_properties_add_int(props, "losses", obs_module_text("Losses"), 0, INT_MAX, 1);
 
-	// カウンター操作ボタン
-	obs_properties_add_button(props, "reset", obs_module_text("Reset"), match_counter_reset_button);
-
 	// テキストスタイル設定
 	obs_properties_add_font(props, "font", obs_module_text("Font"));
 	obs_properties_add_int(props, "font_size", obs_module_text("FontSize"), 8, 256, 1);
@@ -387,56 +384,6 @@ static obs_properties_t *match_counter_source_get_properties(void *data, void *t
 	obs_properties_add_int(props, "custom_width", obs_module_text("CustomWidth"), 0, 4096, 1);
 
 	return props;
-}
-
-static bool match_counter_add_win_button(obs_properties_t *props, obs_property_t *property, void *data)
-{
-	UNUSED_PARAMETER(props);
-	UNUSED_PARAMETER(property);
-	struct MatchCounterSource *context = data;
-
-	match_counter_add_win(context->counter);
-	return true;
-}
-
-static bool match_counter_add_loss_button(obs_properties_t *props, obs_property_t *property, void *data)
-{
-	UNUSED_PARAMETER(props);
-	UNUSED_PARAMETER(property);
-
-	struct MatchCounterSource *context = data;
-	match_counter_add_loss(context->counter);
-	return true;
-}
-
-static bool match_counter_subtract_win_button(obs_properties_t *props, obs_property_t *property, void *data)
-{
-	UNUSED_PARAMETER(props);
-	UNUSED_PARAMETER(property);
-
-	struct MatchCounterSource *context = data;
-	match_counter_subtract_win(context->counter);
-	return true;
-}
-
-static bool match_counter_subtract_loss_button(obs_properties_t *props, obs_property_t *property, void *data)
-{
-	UNUSED_PARAMETER(props);
-	UNUSED_PARAMETER(property);
-
-	struct MatchCounterSource *context = data;
-	match_counter_subtract_loss(context->counter);
-	return true;
-}
-
-static bool match_counter_reset_button(obs_properties_t *props, obs_property_t *property, void *data)
-{
-	UNUSED_PARAMETER(props);
-	UNUSED_PARAMETER(property);
-
-	struct MatchCounterSource *context = data;
-	match_counter_reset(context->counter);
-	return true;
 }
 
 static void match_counter_source_get_defaults(void *type_data, obs_data_t *settings)
