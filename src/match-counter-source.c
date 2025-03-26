@@ -42,8 +42,6 @@ struct MatchCounterSource {
 	char *font_name;
 	uint16_t font_size;
 	uint32_t font_flags;
-	bool underline;
-	bool strikeout;
 
 	match_counter_t *counter;
 };
@@ -74,8 +72,6 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	const char *font_name = obs_data_get_string(font_obj, "face");
 	uint16_t font_size = (uint16_t)obs_data_get_int(font_obj, "size");
 	uint32_t font_flags = (uint32_t)obs_data_get_int(font_obj, "flags");
-	bool underline = obs_data_get_bool(font_obj, "underline");
-	bool strikeout = obs_data_get_bool(font_obj, "strikeout");
 
 	blog(LOG_DEBUG, "match_counter_source_update: Font settings - name='%s', size=%d, flags=%d",
 	     font_name && strlen(font_name) ? font_name : "Arial", font_size, font_flags);
@@ -90,8 +86,6 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
 	context->font_size = font_size;
 	context->font_flags = font_flags;
-	context->underline = underline;
-	context->strikeout = strikeout;
 
 	context->counter->wins = (int)obs_data_get_int(settings, "wins");
 	context->counter->losses = (int)obs_data_get_int(settings, "losses");
@@ -261,8 +255,6 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	obs_data_set_string(font_obj, "face", context->font_name);
 	obs_data_set_int(font_obj, "size", context->font_size);
 	obs_data_set_int(font_obj, "flags", context->font_flags);
-	obs_data_set_bool(font_obj, "underline", context->underline);
-	obs_data_set_bool(font_obj, "strikeout", context->strikeout);
 	obs_data_set_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
 
