@@ -176,6 +176,13 @@ static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotk
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_win_hotkey: Adding win");
 		match_counter_add_win(context->counter);
+
+		// 設定値を更新
+		obs_data_t *settings = obs_source_get_settings(context->source);
+		obs_data_set_int(settings, "wins", match_counter_get_wins(context->counter));
+		obs_source_update(context->source, settings);
+		obs_data_release(settings);
+
 		obs_source_update_properties(context->source);
 		blog(LOG_INFO, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
 		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
@@ -192,6 +199,13 @@ static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hot
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_loss_hotkey: Adding loss");
 		match_counter_add_loss(context->counter);
+
+		// 設定値を更新
+		obs_data_t *settings = obs_source_get_settings(context->source);
+		obs_data_set_int(settings, "losses", match_counter_get_losses(context->counter));
+		obs_source_update(context->source, settings);
+		obs_data_release(settings);
+
 		obs_source_update_properties(context->source);
 		blog(LOG_INFO, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
 		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
@@ -208,6 +222,14 @@ static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_ho
 	if (pressed) {
 		blog(LOG_INFO, "match_counter_reset_hotkey: Resetting counter");
 		match_counter_reset(context->counter);
+
+		// 設定値を更新
+		obs_data_t *settings = obs_source_get_settings(context->source);
+		obs_data_set_int(settings, "wins", 0);
+		obs_data_set_int(settings, "losses", 0);
+		obs_source_update(context->source, settings);
+		obs_data_release(settings);
+
 		obs_source_update_properties(context->source);
 		blog(LOG_INFO, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
 		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
