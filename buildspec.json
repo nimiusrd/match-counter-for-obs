@@ -33,14 +33,14 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.plugintemplate-for-obs"
+            "bundleId": "com.nimiusrd.matchcounter-for-obs"
         }
     },
     "name": "match-counter",
     "displayName": "Match Counter for OBS",
     "version": "1.0.0",
     "author": "Yudai Udagawa",
-    "website": "https://github.com/nimiusrd/obs-plugin/tree/master",
+    "website": "https://github.com/nimiusrd/match-counter-for-obs/tree/master",
     "email": "nimius.rd@gmail.com",
     "description": "A plugin for OBS Studio that helps streamers track and display match results for competitive games."
 }
