@@ -63,6 +63,12 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	blog(LOG_INFO, "match_counter_source_update: Updating match counter source");
 
 	struct MatchCounterSource *context = data;
+
+	// 現在のカウンター値を保持
+	int current_wins = match_counter_get_wins(context->counter);
+	int current_losses = match_counter_get_losses(context->counter);
+
+	// 新しいカウンターを作成
 	context->counter = match_counter_create();
 
 	const char *format = obs_data_get_string(settings, "format");
@@ -87,8 +93,9 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->font_size = font_size;
 	context->font_flags = font_flags;
 
-	context->counter->wins = (int)obs_data_get_int(settings, "wins");
-	context->counter->losses = (int)obs_data_get_int(settings, "losses");
+	// 設定値と現在の値をマージ
+	context->counter->wins = (int)obs_data_get_int(settings, "wins") + current_wins;
+	context->counter->losses = (int)obs_data_get_int(settings, "losses") + current_losses;
 
 	obs_data_release(font_obj);
 
