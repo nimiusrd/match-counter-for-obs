@@ -282,7 +282,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 
 	// テキストソースの設定を更新
 	obs_data_t *settings = obs_data_create();
-	obs_properties_add_text(settings, "text", formatted_text, OBS_TEXT_MULTILINE);
+	obs_data_set_string(settings, "text", formatted_text);
 
 	// フォント設定
 	obs_data_t *font_obj = obs_data_create();
@@ -367,12 +367,15 @@ static obs_properties_t *match_counter_source_get_properties(void *data, void *t
 	obs_properties_t *props = obs_properties_create();
 
 	// カウンター設定
-	obs_properties_add_text(props, "format", obs_module_text("Format"), OBS_TEXT_DEFAULT);
+	obs_properties_add_text(props, "format", obs_module_text("Format"), OBS_TEXT_MULTILINE);
 	obs_property_set_long_description(obs_properties_get(props, "format"), obs_module_text("FormatTooltip"));
 
 	// 勝敗数設定
 	obs_properties_add_int(props, "wins", obs_module_text("Wins"), 0, INT_MAX, 1);
 	obs_properties_add_int(props, "losses", obs_module_text("Losses"), 0, INT_MAX, 1);
+
+	// カウンター操作ボタン
+	obs_properties_add_button(props, "reset", obs_module_text("Reset"), match_counter_reset_button);
 
 	// テキストスタイル設定
 	obs_properties_add_font(props, "font", obs_module_text("Font"));
@@ -382,15 +385,6 @@ static obs_properties_t *match_counter_source_get_properties(void *data, void *t
 	obs_properties_add_color(props, "outline_color", obs_module_text("OutlineColor"));
 	obs_properties_add_bool(props, "align_center", obs_module_text("AlignCenter"));
 	obs_properties_add_int(props, "custom_width", obs_module_text("CustomWidth"), 0, 4096, 1);
-
-	// カウンター操作ボタン
-	obs_properties_add_button(props, "add_win", obs_module_text("AddWin"), match_counter_add_win_button);
-	obs_properties_add_button(props, "add_loss", obs_module_text("AddLoss"), match_counter_add_loss_button);
-	obs_properties_add_button(props, "subtract_win", obs_module_text("SubtractWin"),
-				  match_counter_subtract_win_button);
-	obs_properties_add_button(props, "subtract_loss", obs_module_text("SubtractLoss"),
-				  match_counter_subtract_loss_button);
-	obs_properties_add_button(props, "reset", obs_module_text("Reset"), match_counter_reset_button);
 
 	return props;
 }
