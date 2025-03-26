@@ -33,7 +33,6 @@ struct MatchCounterSource {
 	gs_stagesurf_t *stagesurface;
 	uint32_t cx;
 	uint32_t cy;
-	bool text_updated;
 	char *text;
 
 	// テキストソース
