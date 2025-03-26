@@ -282,7 +282,7 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 
 	// テキストソースの設定を更新
 	obs_data_t *settings = obs_data_create();
-	obs_data_set_string(settings, "text", formatted_text);
+	obs_properties_add_text(settings, "text", formatted_text, OBS_TEXT_MULTILINE);
 
 	// フォント設定
 	obs_data_t *font_obj = obs_data_create();
