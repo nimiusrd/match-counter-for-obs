@@ -13,13 +13,22 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
 
 ## インストール方法
 
-1. リリースページから最新のバージョンをダウンロードします
+### Windows
+
+1. [リリースページ](https://github.com/nimiusrd/match-counter-for-obs/releases)から`match-counter-x.x.x-windows-x64.zip`をダウンロードします
 2. ダウンロードしたファイルを解凍します
-3. 解凍したフォルダを以下の場所に配置します:
-   * Windows: `C:\Program Files\obs-studio\obs-plugins\64bit\`
-   * macOS: `/Library/Application Support/obs-studio/plugins/`
-   * Linux: `/usr/lib/obs-plugins/` または `~/.config/obs-studio/plugins/`
+3. 解凍したフォルダ内のファイルを以下の場所に配置します:
+   * `match-counter\bin\64bit\match-counter.dll` → `C:\Program Files\obs-studio\obs-plugins\64bit\match-counter.dll`
+   * `match-counter\bin\64bit\match-counter.pdb` → `C:\Program Files\obs-studio\obs-plugins\64bit\match-counter.pdb`
+   * `match-counter\data\locale\en-US.ini` → `C:\Program Files\obs-studio\data\obs-plugins\match-counter\locale\en-US.ini`
+   * `match-counter\data\locale\ja-JP.ini` → `C:\Program Files\obs-studio\data\obs-plugins\match-counter\locale\ja-JP.ini`
 4. OBS Studioを再起動します
+
+### macOS
+
+1. [リリースページ](https://github.com/nimiusrd/match-counter-for-obs/releases)から`match-counter-x.x.x-macos-universal.pkg`をダウンロードします
+2. ダウンロードしたファイルを実行し、インストーラーの指示に従ってインストールします
+3. OBS Studioを再起動します
 
 ## 使い方
 
