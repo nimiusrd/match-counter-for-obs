@@ -63,6 +63,9 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	blog(LOG_INFO, "match_counter_source_update: Updating match counter source");
 
 	struct MatchCounterSource *context = data;
+	if (context->counter) {
+		match_counter_destroy(context->counter);
+	}
 	context->counter = match_counter_create();
 
 	const char *format = obs_data_get_string(settings, "format");
@@ -257,14 +260,27 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 		blog(LOG_DEBUG, "match_counter_source_render: Text source created successfully");
 	}
 
-	// テキストの更新が必要かチェック
+	// 現在のテキストを取得
 	const char *formatted_text = match_counter_get_formatted_text(context->counter);
 
+	// テキストが空の場合はスキップ
 	if (!formatted_text || !strlen(formatted_text)) {
 		blog(LOG_INFO, "match_counter_source_render: Empty text, skipping render");
 		bfree((void *)formatted_text);
 		return;
 	}
+
+	// 前回のテキストと比較して変化がない場合はスキップ
+	blog(LOG_DEBUG, "match_counter_source_render: Comparing text '%s' with '%s'", context->text, formatted_text);
+	if (context->text && strcmp(context->text, formatted_text) == 0) {
+		blog(LOG_DEBUG, "match_counter_source_render: Text unchanged, skipping render");
+		bfree((void *)formatted_text);
+		return;
+	}
+
+	// テキストを更新
+	bfree(context->text);
+	context->text = bstrdup(formatted_text);
 
 	blog(LOG_DEBUG, "match_counter_source_render: Rendering text '%s'", formatted_text);
 
