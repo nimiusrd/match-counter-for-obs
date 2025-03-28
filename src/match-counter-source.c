@@ -301,7 +301,12 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	blog(LOG_DEBUG, "match_counter_source_render: Text dimensions - width=%d, height=%d", context->cx, context->cy);
 
 	// テキストソースをレンダリング
+	blog(LOG_DEBUG, "Entering graphics context");
+	obs_enter_graphics();
+	blog(LOG_DEBUG, "Rendering text source");
 	obs_source_video_render(context->text_source);
+	obs_leave_graphics();
+	blog(LOG_DEBUG, "Leaving graphics context");
 
 	// リソースの解放
 	obs_data_release(settings);
