@@ -271,7 +271,9 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	}
 
 	// テキストを更新
-	bfree(context->text);
+	if (context->text) {
+		bfree(context->text);
+	}
 	context->text = bstrdup(formatted_text);
 
 	blog(LOG_DEBUG, "match_counter_source_render: Rendering text '%s'", formatted_text);
@@ -288,8 +290,9 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 	obs_data_set_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
 
-	// テキストソースを更新
+	blog(LOG_DEBUG, "match_counter_source_render: Updating text source settings");
 	obs_source_update(context->text_source, settings);
+	blog(LOG_DEBUG, "match_counter_source_render: Text source settings updated");
 
 	// テキストソースのサイズを取得
 	context->cx = obs_source_get_width(context->text_source);
