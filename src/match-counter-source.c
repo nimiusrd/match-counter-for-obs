@@ -270,14 +270,6 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 		return;
 	}
 
-	// 前回のテキストと比較して変化がない場合はスキップ
-	blog(LOG_DEBUG, "match_counter_source_render: Comparing text '%s' with '%s'", context->text, formatted_text);
-	if (context->text && strcmp(context->text, formatted_text) == 0) {
-		blog(LOG_DEBUG, "match_counter_source_render: Text unchanged, skipping render");
-		bfree((void *)formatted_text);
-		return;
-	}
-
 	// テキストを更新
 	bfree(context->text);
 	context->text = bstrdup(formatted_text);
