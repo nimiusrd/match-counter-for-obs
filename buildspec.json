@@ -38,7 +38,7 @@
     },
     "name": "match-counter",
     "displayName": "Match Counter for OBS",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "author": "Yudai Udagawa",
     "website": "https://github.com/nimiusrd/match-counter-for-obs/tree/main",
     "email": "nimius.rd@gmail.com",
