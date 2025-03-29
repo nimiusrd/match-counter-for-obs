@@ -65,7 +65,7 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
    * 敗北を追加
    * カウンターをリセット
 
-<img width="721" alt="スクリーンショット 2025-03-29 14 46 21" src="https://github.com/user-attachments/assets/d73dd1cd-aea3-4273-ab6d-058fc8a31efa" />
+<img width="721" alt="ホットキーの設定画面" src="https://github.com/user-attachments/assets/d73dd1cd-aea3-4273-ab6d-058fc8a31efa" />
 
 ## ビルド方法
 
