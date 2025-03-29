@@ -4,11 +4,12 @@
 
 Match Counter for OBSは、対戦ゲーム配信をサポートするためのOBS Studioプラグインです。このプラグインを使用することで、配信中の勝敗カウントを簡単に管理し、表示することができます。
 
+<img width="515" alt="プレビュー" src="https://github.com/user-attachments/assets/e32b4cd9-3dc1-4ca9-af41-9ed96ec6482b" />
+
 主な機能:
 
 * 勝敗のカウントと表示
 * カスタマイズ可能な表示フォーマット
-* 専用の操作画面からの簡単な勝敗入力
 * ホットキーによる素早いカウント操作
 
 ## インストール方法
@@ -40,6 +41,8 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
 4. 名前を入力して「OK」をクリックします
 5. 設定画面で表示フォーマットを設定します
 
+<img width="714" alt="設定画面" src="https://github.com/user-attachments/assets/0d92e853-9115-4379-9b9b-9d355e6e69c4" />
+
 ### 表示フォーマットのカスタマイズ
 
 以下の変数を使用して表示フォーマットをカスタマイズできます:
@@ -61,6 +64,8 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
    * 勝利を追加
    * 敗北を追加
    * カウンターをリセット
+
+<img width="721" alt="スクリーンショット 2025-03-29 14 46 21" src="https://github.com/user-attachments/assets/d73dd1cd-aea3-4273-ab6d-058fc8a31efa" />
 
 ## ビルド方法
 
