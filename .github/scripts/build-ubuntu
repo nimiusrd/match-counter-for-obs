@@ -195,7 +195,6 @@ ${_usage_host:-}"
         cmake_args+=(
           --preset ${_preset}-${target##*-}
           -G "${generator}"
-          -DQT_VERSION=${QT_VERSION:-6}
           -DCMAKE_BUILD_TYPE=${config}
           -DCMAKE_INSTALL_PREFIX=/usr
         )
@@ -220,6 +219,9 @@ ${_usage_host:-}"
 
     log_group "Building ${product_name}..."
     cmake ${cmake_build_args}
+
+    log_group "Testing ${product_name}..."
+    ctest --test-dir build_${target##*-} -C ${config} --output-on-failure
   }
 
   log_group "Installing ${product_name}..."

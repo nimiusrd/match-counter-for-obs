@@ -18,17 +18,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <obs-module.h>
 #include <plugin-support.h>
-#include "match-counter.h"
 #include "match-counter-source.c"
-
-// C++関数の宣言
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern void match_counter_ui_init(void);
-#ifdef __cplusplus
-}
-#endif
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
@@ -39,11 +29,6 @@ bool obs_module_load(void)
 
 	// テキストソースの登録
 	obs_register_source(&match_counter_source_info);
-
-	// UIの初期化（フロントエンドAPIが有効な場合）
-#ifdef ENABLE_FRONTEND_API
-	match_counter_ui_init();
-#endif
 
 	return true;
 }

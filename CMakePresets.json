@@ -6,14 +6,7 @@
     "patch": 0
   },
   "configurePresets": [
-    {
-      "name": "template",
-      "hidden": true,
-      "cacheVariables": {
-        "ENABLE_FRONTEND_API": true,
-        "ENABLE_QT": true
-      }
-    },
+    {"name": "template", "hidden": true},
     {
       "name": "macos",
       "displayName": "macOS Universal",

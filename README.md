@@ -51,6 +51,8 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
 * `%t` - 総試合数（勝利数+敗北数）
 * `%r` - 勝率（パーセント表示、例: 75.0%）
 
+末尾の単独の `%` は、リテラルの `%` としてそのまま表示されます。
+
 例:
 * `%w勝 %l敗` → 「3勝 1敗」
 * `%w-%l` → 「3-1」
@@ -74,7 +76,6 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
 * CMake 3.28以上
 * C/C++コンパイラ (GCC, Clang, MSVC等)
 * OBS Studio開発ファイル
-* Qt6開発ファイル (6.0以上)
 
 ### ビルド手順
 
@@ -94,7 +95,7 @@ cmake --preset macos -DCMAKE_OSX_SYSROOT="$SDKROOT"
 cmake --build --preset macos
 ```
 
-SDK のパスはプラグインと依存ライブラリの両方に明示します。初回の構成時に `buildspec.json` で指定された OBS Studio と Qt6 などの依存ファイルを `.deps` に取得し、OBS の開発用ライブラリをビルドします。インターネット接続と、初回ビルドのための時間・ディスク容量が必要です。
+SDK のパスはプラグインと依存ライブラリの両方に明示します。初回の構成時に `buildspec.json` で指定された OBS Studio などの依存ファイルを `.deps` に取得し、OBS の開発用ライブラリをビルドします。インターネット接続と、初回ビルドのための時間・ディスク容量が必要です。
 
 生成されるプラグインは `build_macos/rundir/RelWithDebInfo/match-counter.plugin` です。デバッグ用にビルドする場合は次のコマンドを使用します。
 

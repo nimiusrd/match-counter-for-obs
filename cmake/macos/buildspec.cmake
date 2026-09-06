@@ -14,11 +14,9 @@ function(_check_dependencies_macos)
   set(dependencies_dir "${CMAKE_CURRENT_SOURCE_DIR}/.deps")
   set(prebuilt_filename "macos-deps-VERSION-ARCH_REVISION.tar.xz")
   set(prebuilt_destination "obs-deps-VERSION-ARCH")
-  set(qt6_filename "macos-deps-qt6-VERSION-ARCH-REVISION.tar.xz")
-  set(qt6_destination "obs-deps-qt6-VERSION-ARCH")
   set(obs-studio_filename "VERSION.tar.gz")
   set(obs-studio_destination "obs-studio-VERSION")
-  set(dependencies_list prebuilt qt6 obs-studio)
+  set(dependencies_list prebuilt obs-studio)
 
   _check_dependencies()
 
