@@ -118,6 +118,53 @@ cmake ..
 cmake --build .
 ```
 
+## OBS での動作確認
+
+### macOS のローカルビルドを導入する
+
+1. 上記の手順でビルドし、OBS Studio を終了します。
+2. 既存の `~/Library/Application Support/obs-studio/plugins/match-counter.plugin` がある場合は、復元できるようプラグインフォルダの外へ退避します。
+3. リポジトリのルートで次を実行し、ローカル動作用のアドホック署名を付けて検証した後、プラグインのバンドル全体をコピーします。Debug ビルドを確認する場合は `RelWithDebInfo` を `Debug` に置き換えます。
+
+   ```bash
+   codesign --force --sign - build_macos/rundir/RelWithDebInfo/match-counter.plugin
+   codesign --verify --strict --all-architectures --verbose=2 \
+     build_macos/rundir/RelWithDebInfo/match-counter.plugin
+   mkdir -p "$HOME/Library/Application Support/obs-studio/plugins"
+   ditto build_macos/rundir/RelWithDebInfo/match-counter.plugin \
+     "$HOME/Library/Application Support/obs-studio/plugins/match-counter.plugin"
+   ```
+
+4. OBS Studio を起動します。ビルドするだけでは導入済みプラグインは更新されません。変更後は OBS の終了、署名・検証、コピー、起動を繰り返します。
+
+未署名のバンドルは `Trying to load an unsigned library` で読み込みを拒否される場合があります。このアドホック署名はローカル確認用であり、配布用の Developer ID 署名・公証とは異なります。
+
+配置先は [OBS 公式のプラグイン導入ガイド](https://obsproject.com/kb/plugins-guide)に従います。確認後に元の版へ戻す場合も、OBS を終了してからバンドルを退避したものに戻してください。
+
+### 確認項目と期待値
+
+確認専用のシーンコレクションを作成し、「試合カウンター」を新規ソースとして追加します。配信を開始する必要はありません。ホットキーは「設定」→「ホットキー」で、確認用ソースの「勝利を追加」「敗北を追加」「カウンターをリセット」に、既存の操作と重複しないキーを割り当てて適用します。
+
+| 確認 | 操作と期待値 |
+| --- | --- |
+| ソース追加 | ソース一覧に「試合カウンター」があり、新規追加時に `0-0(0.0%)` が描画される。 |
+| 表示変数・直接入力 | プロパティの表示フォーマットを `%w勝 %l敗 / %t戦 / %r`、勝利を `3`、敗北を `1` に設定すると、`3勝 1敗 / 4戦 / 75.0%` になる。 |
+| 勝利の加算 | 勝利のホットキーを一度押して離すと `4勝 1敗 / 5戦 / 80.0%` になる。プロパティを開き直して勝利が `4` であることも確認する。 |
+| 敗北の加算 | 敗北のホットキーを一度押して離すと `4勝 2敗 / 6戦 / 66.7%` になる。プロパティを開き直して敗北が `2` であることも確認する。 |
+| リセット | リセットのホットキーで `0勝 0敗 / 0戦 / 0.0%` になり、プロパティの勝利・敗北も `0` になる。 |
+| フォント・複数行 | フォントとサイズを変更し、表示フォーマットに改行を入れる。プレビューとシーン上の表示に反映され、文字が欠けないことを確認する。 |
+| 保存・再起動 | 勝利 `3`・敗北 `1` を設定してプロパティを確定し、OBS を正常終了して再起動する。勝敗、表示フォーマット、フォント、ホットキーが保持されることを確認する。 |
+
+### ロードとログの確認
+
+OBS の「ヘルプ」→「ログファイル」から現在のログを確認します。macOS のログ保存先は `~/Library/Application Support/obs-studio/logs/` です。
+
+* `[match-counter] plugin loaded successfully (version ...)` があることを確認します。過去の起動ログと取り違えないようにしてください。
+* ソースが追加できない場合は、`match-counter` に関するロード失敗や依存ライブラリのエラーを確認します。
+* ソースが追加できても描画されない場合は、`Failed to create text source` などを確認します。macOS では OBS の FreeType 2 テキストソースを内部で使用しています。
+
+検証結果には OS・OBS のバージョン、対象コミット、ビルド構成、各項目の成否と未実施項目を記録します。ビルド成功、OBS でのロード成功、表示・操作の成功、配布用の署名・公証はそれぞれ別の確認です。
+
 ## ライセンス
 
 このプラグインはGPLv2ライセンスの下で公開されています。詳細はLICENSEファイルを参照してください。
