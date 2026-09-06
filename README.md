@@ -118,6 +118,21 @@ cmake ..
 cmake --build .
 ```
 
+## Codex での開発
+
+macOS の Codex でこのリポジトリを開いて作業できます。[AGENTS.md](AGENTS.md) にコードの構成、ビルドコマンド、変更後の検証方法をまとめています。Codex は作業開始時にこのファイルを読み込みます（[公式ドキュメント](https://learn.chatgpt.com/docs/agent-configuration/agents-md)）。
+
+Xcode と CMake の準備後、初回は次のコマンドで依存取得と構成を行います。
+
+```bash
+bash build-aux/setup-macos.sh
+cmake --build --preset macos
+```
+
+Codex のローカル環境設定で macOS 用セットアップスクリプトに `bash build-aux/setup-macos.sh` を登録すると、新しい worktree の作成時にも構成を実行できます。ビルド用アクションには `cmake --build --preset macos` を指定します（[ローカル環境の公式手順](https://learn.chatgpt.com/docs/environments/local-environment)）。
+
+このセットアップスクリプトの対象は macOS です。OBS 上での画面・ホットキーの動作確認は、ビルド後に別途行ってください。
+
 ## ライセンス
 
 このプラグインはGPLv2ライセンスの下で公開されています。詳細はLICENSEファイルを参照してください。
