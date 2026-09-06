@@ -23,6 +23,14 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/bmem.h>
 #include "match-counter.h"
 
+#ifdef _WIN32
+static const char *const default_font_name = "Yu Gothic";
+#elif defined(__APPLE__)
+static const char *const default_font_name = "Hiragino Maru Gothic ProN";
+#else
+static const char *const default_font_name = "Noto Sans CJK JP";
+#endif
+
 struct MatchCounterSource {
 	obs_source_t *source;
 	obs_hotkey_id win_hotkey;
@@ -73,14 +81,14 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	uint32_t font_flags = (uint32_t)obs_data_get_int(font_obj, "flags");
 
 	blog(LOG_DEBUG, "match_counter_source_update: Font settings - name='%s', size=%d, flags=%d",
-	     font_name && strlen(font_name) ? font_name : "Arial", font_size, font_flags);
+	     font_name && strlen(font_name) ? font_name : default_font_name, font_size, font_flags);
 
 	if (font_size <= 0)
 		font_size = 256;
 
 	bfree(context->font_name);
 
-	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
+	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : default_font_name);
 	context->font_size = font_size;
 	context->font_flags = font_flags;
 
@@ -345,7 +353,7 @@ static void match_counter_source_get_defaults(void *type_data, obs_data_t *setti
 
 	// フォント設定のデフォルト値
 	obs_data_t *font_obj = obs_data_create();
-	obs_data_set_string(font_obj, "face", "Arial");
+	obs_data_set_string(font_obj, "face", default_font_name);
 	obs_data_set_int(font_obj, "size", 256);
 	obs_data_set_int(font_obj, "flags", 0);
 	obs_data_set_default_obj(settings, "font", font_obj);
