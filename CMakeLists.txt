@@ -30,6 +30,7 @@ if(BUILD_TESTING)
   if(APPLE OR WIN32)
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/buildspec.json" _buildspec)
     string(JSON _prebuilt_version GET ${_buildspec} dependencies prebuilt version)
+    string(JSON _obs_version GET ${_buildspec} dependencies obs-studio version)
   endif()
 
   if(APPLE)
@@ -44,13 +45,14 @@ if(BUILD_TESTING)
       match-counter-tests
       PROPERTIES
         ENVIRONMENT_MODIFICATION
-          "PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/bin/64bit;PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/obs-deps-${_prebuilt_version}-${CMAKE_VS_PLATFORM_NAME}/bin/64bit"
+          "PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/bin/64bit;PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/obs-deps-${_prebuilt_version}-${CMAKE_VS_PLATFORM_NAME}/bin/64bit;PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/obs-studio-${_obs_version}/build_${CMAKE_VS_PLATFORM_NAME}/rundir/Release/bin/64bit"
     )
   endif()
 
   if(APPLE OR WIN32)
     unset(_buildspec)
     unset(_prebuilt_version)
+    unset(_obs_version)
   endif()
 endif()
 
