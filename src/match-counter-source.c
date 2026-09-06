@@ -18,7 +18,9 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <obs-module.h>
 #include <plugin-support.h>
-#include <util/platform.h>
+#include <limits.h>
+#include <string.h>
+#include <util/bmem.h>
 #include "match-counter.h"
 
 struct MatchCounterSource {
@@ -26,14 +28,8 @@ struct MatchCounterSource {
 	obs_hotkey_id win_hotkey;
 	obs_hotkey_id loss_hotkey;
 	obs_hotkey_id reset_hotkey;
-	char *format;
-
-	// テキスト描画用の設定
-	gs_texrender_t *texrender;
-	gs_stagesurf_t *stagesurface;
 	uint32_t cx;
 	uint32_t cy;
-	char *text;
 
 	// テキストソース
 	obs_source_t *text_source;
@@ -82,10 +78,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	if (font_size <= 0)
 		font_size = 256;
 
-	bfree(context->format);
 	bfree(context->font_name);
 
-	context->format = bstrdup(format);
 	context->font_name = bstrdup(font_name && strlen(font_name) ? font_name : "Arial");
 	context->font_size = font_size;
 	context->font_flags = font_flags;
@@ -108,15 +102,6 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 
 	struct MatchCounterSource *context = bzalloc(sizeof(struct MatchCounterSource));
 	context->source = source;
-	context->format = bstrdup("%w-%l(%r)");
-
-	// テキスト描画用の設定
-	context->texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
-	context->font_name = bstrdup("Arial");
-	context->font_size = 32;
-	context->font_flags = 0;
-
-	blog(LOG_DEBUG, "match_counter_source_create: Initializing with format='%s'", context->format);
 
 	match_counter_source_update(context, settings);
 
@@ -144,16 +129,6 @@ static void match_counter_source_destroy(void *data)
 	obs_hotkey_unregister(context->loss_hotkey);
 	obs_hotkey_unregister(context->reset_hotkey);
 
-	// テキスト描画リソースの解放
-	if (context->texrender) {
-		gs_texrender_destroy(context->texrender);
-		context->texrender = NULL;
-	}
-	if (context->stagesurface) {
-		gs_stagesurface_destroy(context->stagesurface);
-		context->stagesurface = NULL;
-	}
-
 	// テキストソースの解放
 	if (context->text_source) {
 		blog(LOG_DEBUG, "match_counter_source_destroy: Releasing text source");
@@ -161,9 +136,7 @@ static void match_counter_source_destroy(void *data)
 		context->text_source = NULL;
 	}
 
-	bfree(context->format);
 	bfree(context->font_name);
-	bfree(context->text);
 	bfree(context);
 
 	blog(LOG_INFO, "match_counter_source_destroy: Match counter source destroyed");
@@ -270,12 +243,6 @@ static void match_counter_source_render(void *data, gs_effect_t *effect)
 		return;
 	}
 
-	// テキストを更新
-	if (context->text) {
-		bfree(context->text);
-	}
-	context->text = bstrdup(formatted_text);
-
 	blog(LOG_DEBUG, "match_counter_source_render: Rendering text '%s'", formatted_text);
 
 	// テキストソースの設定を更新
@@ -381,12 +348,6 @@ static void match_counter_source_get_defaults(void *type_data, obs_data_t *setti
 	obs_data_set_int(font_obj, "flags", 0);
 	obs_data_set_default_obj(settings, "font", font_obj);
 	obs_data_release(font_obj);
-}
-
-static const char *match_counter_source_get_text(void *data)
-{
-	struct MatchCounterSource *context = data;
-	return match_counter_get_formatted_text(context->counter);
 }
 
 struct obs_source_info match_counter_source_info = {.id = "match_counter_source",
