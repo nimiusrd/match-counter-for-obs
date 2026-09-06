@@ -78,6 +78,32 @@ Match Counter for OBSは、対戦ゲーム配信をサポートするためのOB
 
 ### ビルド手順
 
+#### macOS
+
+Xcode 16.0 以上（macOS 15.0 SDK 以上。Command Line Tools のみでは不可）と CMake をインストールし、Xcode の初期セットアップを完了してください。
+
+```bash
+xcodebuild -runFirstLaunch
+```
+
+リポジトリのルートで macOS 用プリセットを実行します。
+
+```bash
+export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+cmake --preset macos -DCMAKE_OSX_SYSROOT="$SDKROOT"
+cmake --build --preset macos
+```
+
+SDK のパスはプラグインと依存ライブラリの両方に明示します。初回の構成時に `buildspec.json` で指定された OBS Studio と Qt6 などの依存ファイルを `.deps` に取得し、OBS の開発用ライブラリをビルドします。インターネット接続と、初回ビルドのための時間・ディスク容量が必要です。
+
+生成されるプラグインは `build_macos/rundir/RelWithDebInfo/match-counter.plugin` です。デバッグ用にビルドする場合は次のコマンドを使用します。
+
+```bash
+cmake --build build_macos --config Debug
+```
+
+#### その他の環境
+
 リポジトリをクローン
 ```bash
 git clone https://github.com/nimiusrd/match-counter-for-obs.git
