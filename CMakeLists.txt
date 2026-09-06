@@ -24,27 +24,31 @@ if(BUILD_TESTING)
 
   if(APPLE)
     set_target_properties(match-counter-tests PROPERTIES XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME NO)
-  elseif(WIN32)
-    add_custom_command(
-      TARGET match-counter-tests
-      POST_BUILD
-      COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:match-counter-tests>
-        $<TARGET_FILE_DIR:match-counter-tests>
-      COMMAND_EXPAND_LISTS
-    )
   endif()
 
   add_test(NAME match-counter-tests COMMAND match-counter-tests)
-  if(APPLE)
+  if(APPLE OR WIN32)
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/buildspec.json" _buildspec)
     string(JSON _prebuilt_version GET ${_buildspec} dependencies prebuilt version)
+  endif()
+
+  if(APPLE)
     set_tests_properties(
       match-counter-tests
       PROPERTIES
         ENVIRONMENT
           "DYLD_FRAMEWORK_PATH=${CMAKE_CURRENT_SOURCE_DIR}/.deps/Frameworks;DYLD_LIBRARY_PATH=${CMAKE_CURRENT_SOURCE_DIR}/.deps/obs-deps-${_prebuilt_version}-universal/lib"
     )
+  elseif(WIN32)
+    set_tests_properties(
+      match-counter-tests
+      PROPERTIES
+        ENVIRONMENT_MODIFICATION
+          "PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/bin/64bit;PATH=path_list_prepend:${CMAKE_CURRENT_SOURCE_DIR}/.deps/obs-deps-${_prebuilt_version}-${CMAKE_VS_PLATFORM_NAME}/bin/64bit"
+    )
+  endif()
+
+  if(APPLE OR WIN32)
     unset(_buildspec)
     unset(_prebuilt_version)
   endif()
