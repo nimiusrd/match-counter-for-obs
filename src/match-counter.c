@@ -116,6 +116,10 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 	while (*format) {
 		if (*format == '%') {
 			format++;
+			if (!*format) {
+				dstr_cat_ch(&str, '%');
+				break;
+			}
 			if (*format == 'w') {
 				dstr_catf(&str, "%d", wins);
 			} else if (*format == 'l') {

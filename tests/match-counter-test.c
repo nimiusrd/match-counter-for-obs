@@ -74,6 +74,7 @@ static void test_formatting(void)
 	expect_text(counter, "", "");
 	expect_text(counter, "%x", "%x");
 	expect_text(counter, "%%", "%%");
+	expect_text(counter, "win rate %", "win rate %");
 
 	match_counter_destroy(counter);
 }

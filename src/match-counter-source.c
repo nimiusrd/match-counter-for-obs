@@ -136,6 +136,7 @@ static void match_counter_source_destroy(void *data)
 		context->text_source = NULL;
 	}
 
+	match_counter_destroy(context->counter);
 	bfree(context->font_name);
 	bfree(context);
 
@@ -293,6 +294,7 @@ static uint32_t match_counter_source_get_width(void *data)
 	const char *text = match_counter_get_formatted_text(context->counter);
 
 	if (!text || !strlen(text)) {
+		bfree((void *)text);
 		return 0;
 	}
 

@@ -92,6 +92,7 @@ float match_counter_get_win_rate(match_counter_t *counter);
  * %l - 敗北数
  * %t - 総試合数
  * %r - 勝率（パーセント表示、例: 75.0%）
+ * 末尾の単独の % はそのまま表示される
  */
 void match_counter_set_format(match_counter_t *counter, const char *format);
 
