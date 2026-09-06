@@ -25,6 +25,12 @@ cmake --build --preset macos
 - 成果物: `build_macos/rundir/RelWithDebInfo/match-counter.plugin`（Debug は `rundir/Debug`）。
 - Xcode のキャッシュ書き込みや依存取得がサンドボックスで拒否された場合は、許可された昇格手段で同じコマンドを実行する。
 
+## Codex のローカル環境設定
+
+Codex のローカル環境設定で macOS 用セットアップスクリプトに `bash build-aux/setup-macos.sh` を登録すると、新しい worktree の作成時にも構成を実行できる。ビルド用アクションには `cmake --build --preset macos` を指定する（[ローカル環境の公式手順](https://learn.chatgpt.com/docs/environments/local-environment)）。
+
+Codex 向けの説明はこのファイルにまとめ、README には記載しない。
+
 ## 変更後の検証
 
 - C/CMake の変更は対象 OS で構成・ビルドする。macOS で Windows の動作まで検証済みとは扱わない。
