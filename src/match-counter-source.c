@@ -23,6 +23,20 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/bmem.h>
 #include "match-counter.h"
 
+static const struct {
+	const char *name;
+	const char *label;
+	void (*apply)(match_counter_t *counter);
+} counter_actions[] = {
+	{"match_counter_win", "AddWin", match_counter_add_win},
+	{"match_counter_remove_win", "RemoveWin", match_counter_remove_win},
+	{"match_counter_loss", "AddLoss", match_counter_add_loss},
+	{"match_counter_remove_loss", "RemoveLoss", match_counter_remove_loss},
+	{"match_counter_reset", "ResetCounter", match_counter_reset},
+};
+
+enum { COUNTER_ACTION_COUNT = sizeof(counter_actions) / sizeof(counter_actions[0]) };
+
 #ifdef _WIN32
 static const char *const default_font_name = "Yu Gothic";
 #elif defined(__APPLE__)
@@ -33,9 +47,7 @@ static const char *const default_font_name = "Noto Sans CJK JP";
 
 struct MatchCounterSource {
 	obs_source_t *source;
-	obs_hotkey_id win_hotkey;
-	obs_hotkey_id loss_hotkey;
-	obs_hotkey_id reset_hotkey;
+	obs_hotkey_id hotkeys[COUNTER_ACTION_COUNT];
 	uint32_t cx;
 	uint32_t cy;
 
@@ -51,10 +63,14 @@ struct MatchCounterSource {
 };
 
 // 前方宣言
-static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
-static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
-static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed);
+static void match_counter_hotkey(void *data, obs_hotkey_id id, obs_hotkey_t *hotkey, bool pressed);
 static void match_counter_source_render(void *data, gs_effect_t *effect);
+
+static int match_counter_get_setting_count(obs_data_t *settings, const char *name)
+{
+	long long value = obs_data_get_int(settings, name);
+	return value < 0 ? 0 : value > INT_MAX ? INT_MAX : (int)value;
+}
 
 static const char *match_counter_source_get_name(void *unused)
 {
@@ -92,8 +108,8 @@ static void match_counter_source_update(void *data, obs_data_t *settings)
 	context->font_size = font_size;
 	context->font_flags = font_flags;
 
-	context->counter->wins = (int)obs_data_get_int(settings, "wins");
-	context->counter->losses = (int)obs_data_get_int(settings, "losses");
+	context->counter->wins = match_counter_get_setting_count(settings, "wins");
+	context->counter->losses = match_counter_get_setting_count(settings, "losses");
 
 	obs_data_release(font_obj);
 
@@ -114,14 +130,11 @@ static void *match_counter_source_create(obs_data_t *settings, obs_source_t *sou
 	match_counter_source_update(context, settings);
 
 	// ホットキーの設定
-	context->win_hotkey = obs_hotkey_register_source(source, "match_counter_win", obs_module_text("AddWin"),
-							 match_counter_win_hotkey, context);
-
-	context->loss_hotkey = obs_hotkey_register_source(source, "match_counter_loss", obs_module_text("AddLoss"),
-							  match_counter_loss_hotkey, context);
-
-	context->reset_hotkey = obs_hotkey_register_source(
-		source, "match_counter_reset", obs_module_text("ResetCounter"), match_counter_reset_hotkey, context);
+	for (size_t i = 0; i < COUNTER_ACTION_COUNT; i++) {
+		context->hotkeys[i] = obs_hotkey_register_source(source, counter_actions[i].name,
+								 obs_module_text(counter_actions[i].label),
+								 match_counter_hotkey, context);
+	}
 
 	blog(LOG_INFO, "match_counter_source_create: Match counter source created successfully");
 	return context;
@@ -133,9 +146,8 @@ static void match_counter_source_destroy(void *data)
 
 	struct MatchCounterSource *context = data;
 
-	obs_hotkey_unregister(context->win_hotkey);
-	obs_hotkey_unregister(context->loss_hotkey);
-	obs_hotkey_unregister(context->reset_hotkey);
+	for (size_t i = 0; i < COUNTER_ACTION_COUNT; i++)
+		obs_hotkey_unregister(context->hotkeys[i]);
 
 	// テキストソースの解放
 	if (context->text_source) {
@@ -151,74 +163,44 @@ static void match_counter_source_destroy(void *data)
 	blog(LOG_INFO, "match_counter_source_destroy: Match counter source destroyed");
 }
 
-static void match_counter_win_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
+static bool match_counter_apply_action(struct MatchCounterSource *context, const char *name)
 {
-	UNUSED_PARAMETER(id);
-	UNUSED_PARAMETER(hotkey);
+	if (!context)
+		return false;
 
-	struct MatchCounterSource *context = data;
+	for (size_t i = 0; i < COUNTER_ACTION_COUNT; i++) {
+		if (strcmp(name, counter_actions[i].name) != 0)
+			continue;
 
-	if (pressed) {
-		blog(LOG_INFO, "match_counter_win_hotkey: Adding win");
-		match_counter_add_win(context->counter);
-
-		// 設定値を更新
+		// 描画側の更新を待たず、最新の設定値に対して操作する。
 		obs_data_t *settings = obs_source_get_settings(context->source);
-		obs_data_set_int(settings, "wins", match_counter_get_wins(context->counter));
+		match_counter_t counter = {.wins = match_counter_get_setting_count(settings, "wins"),
+					   .losses = match_counter_get_setting_count(settings, "losses")};
+		counter_actions[i].apply(&counter);
+		obs_data_set_int(settings, "wins", counter.wins);
+		obs_data_set_int(settings, "losses", counter.losses);
 		obs_source_update(context->source, settings);
 		obs_data_release(settings);
-
-		obs_source_update_properties(context->source);
-		blog(LOG_DEBUG, "match_counter_win_hotkey: Current score - wins=%d, losses=%d",
-		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
+		return true;
 	}
+
+	return false;
 }
 
-static void match_counter_loss_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
+static void match_counter_hotkey(void *data, obs_hotkey_id id, obs_hotkey_t *hotkey, bool pressed)
 {
 	UNUSED_PARAMETER(id);
-	UNUSED_PARAMETER(hotkey);
-
 	struct MatchCounterSource *context = data;
 
-	if (pressed) {
-		blog(LOG_INFO, "match_counter_loss_hotkey: Adding loss");
-		match_counter_add_loss(context->counter);
-
-		// 設定値を更新
-		obs_data_t *settings = obs_source_get_settings(context->source);
-		obs_data_set_int(settings, "losses", match_counter_get_losses(context->counter));
-		obs_source_update(context->source, settings);
-		obs_data_release(settings);
-
+	if (pressed && match_counter_apply_action(context, obs_hotkey_get_name(hotkey)))
 		obs_source_update_properties(context->source);
-		blog(LOG_DEBUG, "match_counter_loss_hotkey: Current score - wins=%d, losses=%d",
-		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
-	}
 }
 
-static void match_counter_reset_hotkey(void *data, obs_hotkey_pair_id id, obs_hotkey_t *hotkey, bool pressed)
+static bool match_counter_button_clicked(obs_properties_t *props, obs_property_t *property, void *data)
 {
-	UNUSED_PARAMETER(id);
-	UNUSED_PARAMETER(hotkey);
-
-	struct MatchCounterSource *context = data;
-
-	if (pressed) {
-		blog(LOG_INFO, "match_counter_reset_hotkey: Resetting counter");
-		match_counter_reset(context->counter);
-
-		// 設定値を更新
-		obs_data_t *settings = obs_source_get_settings(context->source);
-		obs_data_set_int(settings, "wins", 0);
-		obs_data_set_int(settings, "losses", 0);
-		obs_source_update(context->source, settings);
-		obs_data_release(settings);
-
-		obs_source_update_properties(context->source);
-		blog(LOG_DEBUG, "match_counter_reset_hotkey: Counter reset - wins=%d, losses=%d",
-		     match_counter_get_wins(context->counter), match_counter_get_losses(context->counter));
-	}
+	UNUSED_PARAMETER(props);
+	// true を返すと、クリック処理の完了後にプロパティ表示が更新される。
+	return match_counter_apply_action(data, obs_property_name(property));
 }
 
 static void match_counter_source_render(void *data, gs_effect_t *effect)
@@ -326,7 +308,6 @@ static uint32_t match_counter_source_get_height(void *data)
 
 static obs_properties_t *match_counter_source_get_properties(void *data, void *type_data)
 {
-	UNUSED_PARAMETER(data);
 	UNUSED_PARAMETER(type_data);
 
 	obs_properties_t *props = obs_properties_create();
@@ -338,6 +319,14 @@ static obs_properties_t *match_counter_source_get_properties(void *data, void *t
 	// 勝敗数設定
 	obs_properties_add_int(props, "wins", obs_module_text("Wins"), 0, INT_MAX, 1);
 	obs_properties_add_int(props, "losses", obs_module_text("Losses"), 0, INT_MAX, 1);
+
+	// ホットキーを割り当てなくても、設定画面から操作できる。
+	for (size_t i = 0; i < COUNTER_ACTION_COUNT; i++) {
+		obs_property_t *button = obs_properties_add_button(props, counter_actions[i].name,
+								   obs_module_text(counter_actions[i].label),
+								   match_counter_button_clicked);
+		obs_property_set_enabled(button, data != NULL);
+	}
 
 	// テキストスタイル設定
 	obs_properties_add_font(props, "font", obs_module_text("Font"));

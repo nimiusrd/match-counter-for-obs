@@ -1,5 +1,6 @@
 #include "match-counter.h"
 
+#include <limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -59,10 +60,77 @@ static void test_counter_operations(void)
 	EXPECT_TRUE(fabsf(match_counter_get_win_rate(counter) - 0.75f) < 0.0001f);
 	expect_text(counter, "%w勝 %l敗 / %t戦 / %r", "3勝 1敗 / 4戦 / 75.0%");
 
+	match_counter_remove_win(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == 2);
+	EXPECT_TRUE(match_counter_get_losses(counter) == 1);
+	expect_text(counter, "%w勝 %l敗 / %t戦 / %r", "2勝 1敗 / 3戦 / 66.7%");
+
+	match_counter_remove_loss(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == 2);
+	EXPECT_TRUE(match_counter_get_losses(counter) == 0);
+	expect_text(counter, "%w勝 %l敗 / %t戦 / %r", "2勝 0敗 / 2戦 / 100.0%");
+
 	match_counter_reset(counter);
 	EXPECT_TRUE(match_counter_get_wins(counter) == 0);
 	EXPECT_TRUE(match_counter_get_losses(counter) == 0);
 
+	match_counter_destroy(counter);
+}
+
+static void test_counter_lower_limits(void)
+{
+	match_counter_t *counter = match_counter_create();
+
+	match_counter_remove_win(counter);
+	match_counter_remove_loss(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == 0);
+	EXPECT_TRUE(match_counter_get_losses(counter) == 0);
+	expect_text(counter, "%w-%l / %t / %r", "0-0 / 0 / 0.0%");
+
+	match_counter_add_win(counter);
+	match_counter_remove_loss(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == 1);
+	EXPECT_TRUE(match_counter_get_losses(counter) == 0);
+	match_counter_remove_win(counter);
+	match_counter_remove_win(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == 0);
+
+	match_counter_add_loss(counter);
+	match_counter_remove_win(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == 0);
+	EXPECT_TRUE(match_counter_get_losses(counter) == 1);
+	match_counter_remove_loss(counter);
+	match_counter_remove_loss(counter);
+	expect_text(counter, "%w-%l / %t / %r", "0-0 / 0 / 0.0%");
+
+	match_counter_destroy(counter);
+}
+
+static void test_counter_upper_limits(void)
+{
+	match_counter_t *counter = match_counter_create();
+
+	counter->wins = INT_MAX - 1;
+	counter->losses = INT_MAX - 1;
+	match_counter_add_win(counter);
+	match_counter_add_loss(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == INT_MAX);
+	EXPECT_TRUE(match_counter_get_losses(counter) == INT_MAX);
+	EXPECT_TRUE(fabsf(match_counter_get_win_rate(counter) - 0.5f) < 0.0001f);
+	expect_text(counter, "%w-%l / %t / %r", "2147483647-2147483647 / 4294967294 / 50.0%");
+
+	match_counter_add_win(counter);
+	match_counter_add_loss(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == INT_MAX);
+	EXPECT_TRUE(match_counter_get_losses(counter) == INT_MAX);
+
+	match_counter_remove_win(counter);
+	match_counter_remove_loss(counter);
+	EXPECT_TRUE(match_counter_get_wins(counter) == INT_MAX - 1);
+	EXPECT_TRUE(match_counter_get_losses(counter) == INT_MAX - 1);
+
+	match_counter_reset(counter);
+	expect_text(counter, "%w-%l / %t / %r", "0-0 / 0 / 0.0%");
 	match_counter_destroy(counter);
 }
 
@@ -93,6 +161,8 @@ static void test_null_counter(void)
 	bfree(text);
 	match_counter_add_win(NULL);
 	match_counter_add_loss(NULL);
+	match_counter_remove_win(NULL);
+	match_counter_remove_loss(NULL);
 	match_counter_reset(NULL);
 	match_counter_set_format(NULL, "%w");
 	match_counter_destroy(NULL);
@@ -102,6 +172,8 @@ int main(void)
 {
 	test_default_counter();
 	test_counter_operations();
+	test_counter_lower_limits();
+	test_counter_upper_limits();
 	test_formatting();
 	test_null_counter();
 

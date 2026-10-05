@@ -44,16 +44,28 @@ match_counter_t *match_counter_create(void);
 void match_counter_destroy(match_counter_t *counter);
 
 /**
- * 勝利数を増やす
+ * 勝利数を増やす（INT_MAX が上限）
  * @param counter 試合カウンター
  */
 void match_counter_add_win(match_counter_t *counter);
 
 /**
- * 敗北数を増やす
+ * 敗北数を増やす（INT_MAX が上限）
  * @param counter 試合カウンター
  */
 void match_counter_add_loss(match_counter_t *counter);
+
+/**
+ * 勝利数を減らす（0 が下限）
+ * @param counter 試合カウンター
+ */
+void match_counter_remove_win(match_counter_t *counter);
+
+/**
+ * 敗北数を減らす（0 が下限）
+ * @param counter 試合カウンター
+ */
+void match_counter_remove_loss(match_counter_t *counter);
 
 /**
  * 勝敗をリセットする

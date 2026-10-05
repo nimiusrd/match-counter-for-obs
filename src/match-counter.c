@@ -17,6 +17,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
 #include "match-counter.h"
+#include <inttypes.h>
+#include <limits.h>
 #include <util/bmem.h>
 #include <util/dstr.h>
 
@@ -40,7 +42,7 @@ void match_counter_destroy(match_counter_t *counter)
 
 void match_counter_add_win(match_counter_t *counter)
 {
-	if (!counter)
+	if (!counter || counter->wins == INT_MAX)
 		return;
 
 	counter->wins++;
@@ -48,10 +50,26 @@ void match_counter_add_win(match_counter_t *counter)
 
 void match_counter_add_loss(match_counter_t *counter)
 {
-	if (!counter)
+	if (!counter || counter->losses == INT_MAX)
 		return;
 
 	counter->losses++;
+}
+
+void match_counter_remove_win(match_counter_t *counter)
+{
+	if (!counter || counter->wins <= 0)
+		return;
+
+	counter->wins--;
+}
+
+void match_counter_remove_loss(match_counter_t *counter)
+{
+	if (!counter || counter->losses <= 0)
+		return;
+
+	counter->losses--;
 }
 
 void match_counter_reset(match_counter_t *counter)
@@ -84,7 +102,7 @@ float match_counter_get_win_rate(match_counter_t *counter)
 	if (!counter)
 		return 0.0f;
 
-	int total = counter->wins + counter->losses;
+	int64_t total = (int64_t)counter->wins + counter->losses;
 	if (total == 0)
 		return 0.0f;
 
@@ -126,7 +144,7 @@ char *match_counter_get_formatted_text(match_counter_t *counter)
 				dstr_catf(&str, "%d", losses);
 			} else if (*format == 't') {
 				// 総試合数（wins+losses）
-				dstr_catf(&str, "%d", wins + losses);
+				dstr_catf(&str, "%" PRId64, (int64_t)wins + losses);
 			} else if (*format == 'r') {
 				// 勝率をパーセント表示（小数点以下1桁）
 				dstr_catf(&str, "%.1f%%", win_rate * 100.0f);
